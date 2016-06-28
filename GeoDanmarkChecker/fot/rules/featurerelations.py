@@ -1,0 +1,1 @@
+# Rules between neighboring objects
