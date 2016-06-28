@@ -1,17 +1,19 @@
 from singlefeaturerule import SingleFeatureRule
 
 
-class AttributeInList(SingleFeatureRule):
+class AttributeRule(SingleFeatureRule):
 
-    def __init__(self, feature_type, attributename, validvalues, filter=None):
-        super(AttributeInList, self).__init__(feature_type, filter)
+    def __init__(self, feature_type, attributename, isvalidfunction, filter=None):
+        super(AttributeRule, self).__init__(feature_type)
+        self.filter = filter
         self.attributename = attributename
-        self.validvalues = validvalues
+        self.isvalidfunction = isvalidfunction
+        self.rulename = "AttributeRule"
 
     def check(self, feature, reporter):
         try:
             value = feature[self.attributename]
-            if not value in self.validvalues:
-                reporter.reportError("AttibuteInList", self.attributename + "=" + str(value) + " not valid", feature)
+            if not self.isvalidfunction(value):
+                reporter.reportError(self.rulename, self.featuretype(),self.attributename + "=" + str(value) + " not valid", feature)
         except:
-            reporter.reportError("")
+            reporter.reportError(self.rulename, self.featuretype(), "Error processing attribute: " + self.attributename, feature)
