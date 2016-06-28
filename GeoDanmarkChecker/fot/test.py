@@ -1,11 +1,12 @@
 # coding=utf-8
-import qgisapp
-from repository import Repository
-from rules.singlefeature.attributerule import AttributeRule
-from rules.layer.uniqueattributevalue import UniqueAttributeValue
 import featuretype
-from rules.executor import SingleRepoExecutor
+import qgisapp
+from rules.dataset.singlelayer import UniqueAttributeValue
+from rules.dataset.singlelayer import AttributeRule
+from GeoDanmarkChecker.fot.repository import Repository
 from reporter import Reporter
+
+from rules import RuleExecutor
 
 rules = []
 rules.append(
@@ -28,7 +29,8 @@ rules.append(
 with qgisapp.QgisStandaloneApp(True) as app:
     print "App initialised"
     reporter = Reporter("dummyfilename")
-    rep = Repository(u'/Volumes/Macintosh HD/Users/asger/Code/qgis-GeoDanmarkCheck/testdata/fot5.sqlite')
-    exe = SingleRepoExecutor(rep, rules, reporter, None)
-    exe.execute()
+    before = Repository(u'/Volumes/Macintosh HD/Users/asger/Code/qgis-GeoDanmarkCheck/testdata/fot5.sqlite')
+    after = Repository(u'/Volumes/Macintosh HD/Users/asger/Code/qgis-GeoDanmarkCheck/testdata/fot5.sqlite')
+    exe = RuleExecutor(before, after)
+    exe.execute(rules, reporter, None)
 

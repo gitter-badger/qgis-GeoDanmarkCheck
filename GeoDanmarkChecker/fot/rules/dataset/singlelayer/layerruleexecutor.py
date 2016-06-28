@@ -1,4 +1,4 @@
-from layerrule import LayerRule
+from singlelayerrule import LayerRule
 from GeoDanmarkChecker.fot.repository import Repository
 
 class LayerRuleExecutor():

@@ -1,7 +1,6 @@
 from qgis.core import QgsVectorLayer, QgsFeatureRequest, QgsRectangle
-from featuretype import FeatureType
 
-class Repository:
+class Repository(object):
 
     def __init__(self, filename):
         self.filename = filename
@@ -44,7 +43,7 @@ if __name__ == '__main__':
     with qgisapp.QgisStandaloneApp(True) as app:
         print "App initialised"
         rep = Repository(u'/Volumes/Macintosh HD/Users/asger/Code/qgis-GeoDanmarkCheck/testdata/fot5.sqlite')
-        print rep.read(BYGNING)
+        print rep.read(FeatureType.BYGNING)
 
 
 

@@ -1,5 +1,6 @@
-from singlefeature.singlefeatureexecutor import SingleFeatureExecutor
-from layer.layerruleexecutor import LayerRuleExecutor
+from GeoDanmarkChecker.fot.rules.dataset.singlelayer import LayerRuleExecutor
+from GeoDanmarkChecker.fot.rules.dataset.singlefeature import SingleFeatureExecutor
+
 
 class SingleRepoExecutor():
 

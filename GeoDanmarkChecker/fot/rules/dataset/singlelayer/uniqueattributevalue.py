@@ -1,7 +1,7 @@
-from layerrule import LayerRule
+from singlelayerrule import SingleLayerRule
 from GeoDanmarkChecker.fot.geomutils import shortestline
 
-class UniqueAttributeValue(LayerRule):
+class UniqueAttributeValue(SingleLayerRule):
     def __init__(self, feature_type, attributename, filter=None):
         super(UniqueAttributeValue, self).__init__(feature_type)
         self.filter = filter

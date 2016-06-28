@@ -1,4 +1,4 @@
-from singlefeaturerule import SingleFeatureRule
+from GeoDanmarkChecker.fot.rules.dataset.singlelayer.singlefeaturerule import SingleFeatureRule
 
 
 class AttributeRule(SingleFeatureRule):

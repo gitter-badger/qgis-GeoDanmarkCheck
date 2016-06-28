@@ -1,14 +1,13 @@
 # Rules regarding a single object
-from GeoDanmarkChecker.fot.rules.rule import Rule
+from singlelayerrule import SingleLayerRule
 from qgis.core import QgsFeatureRequest
-# from singlefeatureexecutor import SingleFeatureExecutor
 
-class SingleFeatureRule(Rule):
+class SingleFeatureRule(SingleLayerRule):
 
     #_executor =  SingleFeatureExecutor()
 
     def __init__(self, feature_type):
-        super(SingleFeatureRule, self).__init__()
+        super(SingleLayerRule, self).__init__()
         self._feature_type = feature_type
 
     def featuretype(self):
