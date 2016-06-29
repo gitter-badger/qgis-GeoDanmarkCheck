@@ -1,1 +1,2 @@
-from _tools import shortestline, togeometry
+from _tools import shortestline, togeometry, bbox, bboxoverlaps
+from featureindex import FeatureIndex

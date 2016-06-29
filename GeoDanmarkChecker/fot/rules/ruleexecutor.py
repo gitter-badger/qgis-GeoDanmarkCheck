@@ -1,7 +1,7 @@
-from GeoDanmarkChecker.fot.rules import Rule
-from GeoDanmarkChecker.fot.repository import Repository
-from GeoDanmarkChecker.fot.rules.compare.comparerule import CompareRule
-from GeoDanmarkChecker.fot.rules.dataset.datasetrule import DatasetRule
+from . import Rule
+from .. import Repository
+from .dualdataset.comparerule import CompareRule
+from .dataset.datasetrule import DatasetRule
 
 class RuleExecutor:
 
@@ -17,7 +17,7 @@ class RuleExecutor:
     def execute(self, rules, errorreporter, progressreporter):
         for r in rules:
             if not isinstance(r, Rule):
-                raise Exception("Unknown rule type: " + type(r))
+                raise Exception("Unknown rule type: " + str(r))
 
             if isinstance(r, CompareRule):
                 r.execute(self.before, self.after, errorreporter, progressreporter)
@@ -25,5 +25,5 @@ class RuleExecutor:
                 # For now just execute on after case. Maybe allow user to select
                 r.execute(self.after, errorreporter, progressreporter)
             else:
-                raise TypeError("Unkown rule type: " + r)
+                raise TypeError("Unkown rule type: " + str(r))
 

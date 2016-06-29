@@ -1,4 +1,4 @@
-from GeoDanmarkChecker.fot.rules.dataset.datasetrule import DatasetRule
+from ..datasetrule import DatasetRule
 
 # Rules applying to one layer at a time
 class SingleLayerRule(DatasetRule):

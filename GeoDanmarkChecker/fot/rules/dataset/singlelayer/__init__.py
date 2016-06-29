@@ -1,2 +1,2 @@
-from attributerule import AttributeRule
-from uniqueattributevalue import UniqueAttributeValue
+from .attributerule import AttributeRule
+from .uniqueattributevalue import UniqueAttributeValue

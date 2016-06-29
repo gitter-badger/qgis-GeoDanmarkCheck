@@ -1,4 +1,5 @@
 from qgis.core import QgsVectorLayer, QgsFeatureRequest, QgsRectangle
+from .featuretype import FeatureType
 
 class Repository(object):
 

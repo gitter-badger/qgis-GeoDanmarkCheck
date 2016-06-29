@@ -1,5 +1,5 @@
-from singlelayerrule import SingleLayerRule
-from GeoDanmarkChecker.fot.geomutils import shortestline
+from .singlelayerrule import SingleLayerRule
+from ....geomutils import shortestline
 
 class UniqueAttributeValue(SingleLayerRule):
     def __init__(self, feature_type, attributename, filter=None):

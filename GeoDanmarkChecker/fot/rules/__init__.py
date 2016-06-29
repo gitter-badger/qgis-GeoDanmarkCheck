@@ -1,2 +1,2 @@
-from rule import Rule
-from ruleexecutor import RuleExecutor
+from .rule import Rule
+from .ruleexecutor import RuleExecutor
