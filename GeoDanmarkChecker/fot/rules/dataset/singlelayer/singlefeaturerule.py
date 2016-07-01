@@ -6,8 +6,8 @@ class SingleFeatureRule(SingleLayerRule):
 
     #_executor =  SingleFeatureExecutor()
 
-    def __init__(self, feature_type):
-        super(SingleLayerRule, self).__init__()
+    def __init__(self, name, feature_type):
+        super(SingleLayerRule, self).__init__(name)
         self._feature_type = feature_type
 
     def featuretype(self):

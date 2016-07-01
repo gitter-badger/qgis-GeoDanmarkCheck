@@ -1,9 +1,11 @@
 from ..datasetrule import DatasetRule
 
+
 # Rules applying to one layer at a time
 class SingleLayerRule(DatasetRule):
-    def __init__(self, feature_type, filter = None):
-        super(SingleLayerRule, self).__init__()
+
+    def __init__(self, name, feature_type, filter = None):
+        super(SingleLayerRule, self).__init__(name)
         self._feature_type = feature_type
         assert not filter or isinstance(filter, str)
         self._filter = filter
