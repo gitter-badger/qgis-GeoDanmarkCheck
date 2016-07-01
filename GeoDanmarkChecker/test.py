@@ -3,28 +3,45 @@ import fot.featuretype
 import fot.qgisapp
 from fot.rules.dataset.singlelayer import UniqueAttributeValue
 from fot.rules.dataset.singlelayer import AttributeRule
+from fot.rules.dualdataset.compareattributes import AttributesMustNotBeChanged
 from fot.repository import Repository
 from fot.reporter import Reporter
+from fot.geomutils.featurematcher import PolygonMatcher
 
 from fot.rules import RuleExecutor
 
 rules = []
+if True:
+    rules.append(
+        AttributeRule(
+            'Stream.vandloebstype',
+            fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+            attributename='vandloebstype',
+            isvalidfunction=lambda val: val in [u'XXAlmindelig', u'Gennem sø', u'Rørlagt']
+            # validvalues=[u'XXAlmindelig', u'Gennem sø', u'Rørlagt'] #[u'Almindelig', u'Gennem sø', u'Rørlagt']
+        )
+    )
+
+    rules.append(
+        UniqueAttributeValue(
+            'Building UUID unique',
+            feature_type=fot.featuretype.BYGNING,
+            attributename='bygning_id',
+            filter='bygning_id IS NOT NULL'
+        )
+    )
+
+
 rules.append(
-    AttributeRule(
-        fot.featuretype.VANDLOEBSMIDTE_BRUDT,
-        attributename='vandloebstype',
-        isvalidfunction=lambda val: val in [u'XXAlmindelig', u'Gennem sø', u'Rørlagt']
-        # validvalues=[u'XXAlmindelig', u'Gennem sø', u'Rørlagt'] #[u'Almindelig', u'Gennem sø', u'Rørlagt']
+    AttributesMustNotBeChanged(
+        'Unchanged building UUID',
+        feature_type=fot.featuretype.BYGNING,
+        unchangedattributes=['bygning_id'],
+        featurematcher=PolygonMatcher(relativeareadeviation=0.5),
+        beforefilter='bygning_id IS NOT NULL'
     )
 )
 
-rules.append(
-    UniqueAttributeValue(
-        feature_type=fot.featuretype.BYGNING,
-        attributename='bygning_id',
-        filter='bygning_id IS NOT NULL'
-    )
-)
 
 with fot.qgisapp.QgisStandaloneApp(True) as app:
     print "App initialised"
