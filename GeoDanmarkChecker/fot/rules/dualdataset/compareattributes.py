@@ -2,8 +2,8 @@ from .comparerule import CompareRule
 from ... import Repository
 
 class AttributesMustNotBeChanged(CompareRule):
-    def __init__(self, name, feature_type, unchangedattributes, featurematcher):
-        super(AttributesMustNotBeChanged, self).__init__(name)
+    def __init__(self, name, feature_type, unchangedattributes, featurematcher, beforefilter=None, afterfilter=None):
+        super(AttributesMustNotBeChanged, self).__init__(name, beforefilter, afterfilter)
         self.featuretype = feature_type
         self.unchangedattributes = unchangedattributes
         self.matcher = featurematcher
@@ -14,8 +14,8 @@ class AttributesMustNotBeChanged(CompareRule):
         if not isinstance(afterrepo, Repository):
             raise TypeError()
 
-        beforefeats = beforerepo.read(self.featuretype, attributes=self.unchangedattributes)
-        afterfeats = afterrepo.read(self.featuretype, attributes=self.unchangedattributes)
+        beforefeats = beforerepo.read(self.featuretype, attributes=self.unchangedattributes, feature_filter=self.beforefilter)
+        afterfeats = afterrepo.read(self.featuretype, attributes=self.unchangedattributes, feature_filter=self.afterfilter)
 
         for m in self.matcher.match(beforefeats, afterfeats):
             f1 = m.feature1
