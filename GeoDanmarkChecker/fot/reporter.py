@@ -1,4 +1,6 @@
 from qgis.core import QgsFeature, QgsGeometry
+from geomutils import togeometry
+
 
 class Reporter:
 
@@ -12,6 +14,5 @@ class Reporter:
         self.report(rulename, typeinfo, message, geometry, "warning")
 
     def report(self, rulename, typeinfo, message, geometry, level):
-        if isinstance(geometry, QgsFeature):
-            geometry = geometry.geometry()
+        geometry = togeometry(geometry)
         print level, rulename, typeinfo, message, geometry.exportToWkt(2)
