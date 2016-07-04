@@ -37,7 +37,7 @@ if True:
             feature_type=fot.featuretype.BYGNING,
             unchangedattributes=['bygning_id'],
             featurematcher=PolygonMatcher(relativeareadeviation=0.5),
-            #beforefilter='bygning_id IS NOT NULL'
+            beforefilter='bygning_id IS NOT NULL'
         )
     )
 
@@ -48,7 +48,7 @@ rules.append(
         feature_type=fot.featuretype.VEJMIDTE_BRUDT,
         unchangedattributes=['kommunekode', 'vejkode'],
         featurematcher=LineMatcher(**vejmatchoptions),
-        beforefilter='bygning_id IS NOT NULL'
+        beforefilter='vejkode IS NOT NULL'
     )
 )
 
