@@ -1,9 +1,12 @@
 from .comparerule import CompareRule
 from ... import Repository
+from ... import FeatureType
 
 class AttributesMustNotBeChanged(CompareRule):
     def __init__(self, name, feature_type, unchangedattributes, featurematcher, beforefilter=None, afterfilter=None):
         super(AttributesMustNotBeChanged, self).__init__(name, beforefilter, afterfilter)
+        if not isinstance(feature_type, FeatureType):
+            raise TypeError()
         self.featuretype = feature_type
         self.unchangedattributes = unchangedattributes
         self.matcher = featurematcher

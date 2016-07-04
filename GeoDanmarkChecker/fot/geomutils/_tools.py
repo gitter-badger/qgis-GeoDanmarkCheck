@@ -58,12 +58,82 @@ def geometryequal(f1, f2, tolerance):
     if wkb1 != wkb2:
         return False
     # QgsGeometry.compare only supports lines, polygons and multipolygons
-    if wkb1 in (QGis.WKBMultiPoint, QGis.WKBPoint25D):
+    if wkb1 in (QGis.WKBPoint, QGis.WKBPoint25D):
         return g1.distance(g2) < tolerance
     if wkb1 in (QGis.WKBPolygon, QGis.WKBPolygon25D):
         return QgsGeometry.compare(g1.asPolygon(), g2.asPolygon(), tolerance)
     if wkb1 in (QGis.WKBLineString, QGis.WKBLineString25D):
         return QgsGeometry.compare(g1.asPolyline(), g2.asPolyline(), tolerance)
+
+def extractassingle(f):
+    """
+    :param self:
+    :param geom:
+    :return: a list of single geoms
+    """
+    geom = togeometry(f)
+    multiGeom = QgsGeometry()
+    geometries = []
+    if geom.type() == QGis.Point:
+        if geom.isMultipart():
+            multiGeom = geom.asMultiPoint()
+            for i in multiGeom:
+                geometries.append(QgsGeometry().fromPoint(i))
+        else:
+            geometries.append(geom)
+    elif geom.type() == QGis.Line:
+        if geom.isMultipart():
+            multiGeom = geom.asMultiPolyline()
+            for i in multiGeom:
+                geometries.append(QgsGeometry().fromPolyline(i))
+        else:
+            geometries.append(geom)
+    elif geom.type() == QGis.Polygon:
+        if geom.isMultipart():
+            multiGeom = geom.asMultiPolygon()
+            for i in multiGeom:
+                geometries.append(QgsGeometry().fromPolygon(i))
+        else:
+            geometries.append(geom)
+    elif geom.type() == QGis.UnknownGeometry:
+        if geom.isMultipart():
+            # Geometrycollection
+            geomColl = geom.asGeometryCollection()
+            for g in geomColl:
+                copiedgeom = QgsGeometry(g)
+                for g in extractassingle(copiedgeom):
+                    geometries.append(g)
+    return geometries
+
+def extractlinestrings(f):
+    """If input is a geometrycollection returns a linestring or multilinestring built from the the input"""
+    g = togeometry(f)
+
+    # Short circuit
+    if g.type() == QGis.Line:
+        return g
+
+    singlegeoms = extractassingle(f)
+    #if any([g.isMultipart() for g in singlegeoms]):
+    #    print 'SHAIT'
+    lines = []
+    for x in range(len(singlegeoms)):
+        g = singlegeoms[x]
+        if g.type() == QGis.Line:
+            lines.append(g)
+    lines = [g for g in singlegeoms if g.type() == QGis.Line ]
+    lines = [g.asPolyline() for g in singlegeoms if g.type() == QGis.Line ]#  filter(lambda g : g.type() == QGis.Line, singlegeoms)
+    if lines:
+        if len(lines) > 1:
+            return QgsGeometry.fromMultiPolyline(lines)
+        else:
+            return lines[0]
+    return None
+
+
+
+
+
 
 
 

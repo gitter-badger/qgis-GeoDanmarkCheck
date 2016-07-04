@@ -6,7 +6,7 @@ from fot.rules.dataset.singlelayer import AttributeRule
 from fot.rules.dualdataset.compareattributes import AttributesMustNotBeChanged
 from fot.repository import Repository
 from fot.reporter import Reporter
-from fot.geomutils.featurematcher import PolygonMatcher
+from fot.geomutils.featurematcher import PolygonMatcher, LineMatcher
 
 from fot.rules import RuleExecutor
 
@@ -31,17 +31,26 @@ if True:
         )
     )
 
+    rules.append(
+        AttributesMustNotBeChanged(
+            'Unchanged building UUID',
+            feature_type=fot.featuretype.BYGNING,
+            unchangedattributes=['bygning_id'],
+            featurematcher=PolygonMatcher(relativeareadeviation=0.5),
+            #beforefilter='bygning_id IS NOT NULL'
+        )
+    )
 
+vejmatchoptions = {'minimumintersectionlength': 1.0}  # Vi gider ikke høre om stykker kortere end 1 meter
 rules.append(
     AttributesMustNotBeChanged(
-        'Unchanged building UUID',
-        feature_type=fot.featuretype.BYGNING,
-        unchangedattributes=['bygning_id'],
-        featurematcher=PolygonMatcher(relativeareadeviation=0.5),
+        'Unchanged road attribs',
+        feature_type=fot.featuretype.VEJMIDTE_BRUDT,
+        unchangedattributes=['kommunekode', 'vejkode'],
+        featurematcher=LineMatcher(**vejmatchoptions),
         beforefilter='bygning_id IS NOT NULL'
     )
 )
-
 
 with fot.qgisapp.QgisStandaloneApp(True) as app:
     print "App initialised"

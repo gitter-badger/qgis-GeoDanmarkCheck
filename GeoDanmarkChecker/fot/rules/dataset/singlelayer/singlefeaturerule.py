@@ -6,13 +6,9 @@ class SingleFeatureRule(SingleLayerRule):
 
     #_executor =  SingleFeatureExecutor()
 
-    def __init__(self, name, feature_type):
-        super(SingleLayerRule, self).__init__(name)
-        self._feature_type = feature_type
+    def __init__(self, name, feature_type, attributesneeded=None, geometryneeded=True, filter = None):
+        super(SingleFeatureRule, self).__init__(name, feature_type, attributesneeded, geometryneeded, filter)
 
-    def featuretype(self):
-        """Returns the featuretype which this rule applies to"""
-        return self._feature_type
 
     def checkmany(self, features, reporter):
         for f in features:
