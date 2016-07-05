@@ -10,9 +10,12 @@ class SingleFeatureRule(SingleLayerRule):
         super(SingleFeatureRule, self).__init__(name, feature_type, attributesneeded, geometryneeded, filter)
 
 
-    def checkmany(self, features, reporter):
+    def checkmany(self, features, reporter, progressreporter):
+        progressreporter.begintask(self.name, len(features))
         for f in features:
             self.check(f, reporter)
+            progressreporter.completed_one()
+
 
     def check(self, feature, reporter):
         raise NotImplementedError()

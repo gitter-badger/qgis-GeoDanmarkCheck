@@ -23,12 +23,13 @@ class FeatureMatcher(object):
         self.coordinatetolerance = coordinatetolerance
         self.bboxexpansion = bboxexpansion
 
-    def match(self, featurecollection1, featurecollection2):
+    def match(self, featurecollection1, featurecollection2, progressreporter = None):
         indexedcollection2 = FeatureIndex(featurecollection2, usespatialindex=True)
         for f in featurecollection1:
             prep = PreparedFeature(f)
             for m in self._oneagainstmany(prep, indexedcollection2):
                 yield m
+            progressreporter.completed_one()
 
     def _oneagainstmany(self, prep, indexedfeaturecollection):
         if not isinstance(indexedfeaturecollection, FeatureIndex):

@@ -20,7 +20,8 @@ class AttributesMustNotBeChanged(CompareRule):
         beforefeats = beforerepo.read(self.featuretype, attributes=self.unchangedattributes, feature_filter=self.beforefilter)
         afterfeats = afterrepo.read(self.featuretype, attributes=self.unchangedattributes, feature_filter=self.afterfilter)
 
-        for m in self.matcher.match(beforefeats, afterfeats):
+        progressreporter.begintask(self.name, len(beforefeats))
+        for m in self.matcher.match(beforefeats, afterfeats, progressreporter):
             f1 = m.feature1
             f2 = m.feature2
             for attrib in self.unchangedattributes:

@@ -11,7 +11,7 @@ class SingleLayerRule(DatasetRule):
         self.geometryneeded = geometryneeded
         self.filter = filter
 
-    def checkmany(self, features, reporter, prefiltered=False):
+    def checkmany(self, features, reporter, progressreporter):
         raise NotImplementedError
 
     def execute(self, repo, errorreporter, progressreporter):
@@ -20,4 +20,4 @@ class SingleLayerRule(DatasetRule):
                                  geometry=self.geometryneeded,
                                  feature_filter=self.filter)
         print "got", len(features), "features"
-        self.checkmany(features, errorreporter)
+        self.checkmany(features, errorreporter, progressreporter)

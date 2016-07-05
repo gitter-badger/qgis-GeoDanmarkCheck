@@ -9,7 +9,8 @@ class UniqueAttributeValue(SingleLayerRule):
         self.attributename = attributename
         self.attributevalues = {}
 
-    def checkmany(self, features, reporter):
+    def checkmany(self, features, reporter, progressreporter):
+        progressreporter.begintask(self.name, len(features))
         for feature in features:
             try:
                 value = feature[self.attributename]
@@ -21,3 +22,4 @@ class UniqueAttributeValue(SingleLayerRule):
                     self.attributevalues[value] = feature
             except:
                 reporter.reportError(self.name, self.featuretype, "Error processing attribute: " + self.attributename, feature)
+            progressreporter.completed_one()
