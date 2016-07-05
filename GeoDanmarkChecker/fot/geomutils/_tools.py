@@ -13,7 +13,7 @@ def togeometry(f):
     elif isinstance(f, QgsAbstractGeometryV2):
         return QgsGeometry(f)
     else:
-        raise TypeError("Type was not QgsGeometry or QgsFeature")
+        raise TypeError("Type was not QgsGeometry or QgsFeature. Type was {0}".format(str(type(f))))
 
 
 def shortestline(f1, f2):
@@ -114,18 +114,10 @@ def extractlinestrings(f):
         return g
 
     singlegeoms = extractassingle(f)
-    #if any([g.isMultipart() for g in singlegeoms]):
-    #    print 'SHAIT'
-    lines = []
-    for x in range(len(singlegeoms)):
-        g = singlegeoms[x]
-        if g.type() == QGis.Line:
-            lines.append(g)
     lines = [g for g in singlegeoms if g.type() == QGis.Line ]
-    lines = [g.asPolyline() for g in singlegeoms if g.type() == QGis.Line ]#  filter(lambda g : g.type() == QGis.Line, singlegeoms)
     if lines:
         if len(lines) > 1:
-            return QgsGeometry.fromMultiPolyline(lines)
+            return QgsGeometry.fromMultiPolyline([g.asPolyline() for g in lines])
         else:
             return lines[0]
     return None
