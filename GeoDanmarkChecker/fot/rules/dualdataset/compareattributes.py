@@ -25,5 +25,5 @@ class AttributesMustNotBeChanged(CompareRule):
             f2 = m.feature2
             for attrib in self.unchangedattributes:
                 if not f1[attrib] == f2[attrib]:
-                    message = "Attribute {0} changed from {1} to {2}".format(attrib, f1[attrib], f2[attrib])
+                    message = u'Attribute {0} changed from {1} to {2}'.format(attrib, f1[attrib], f2[attrib])
                     errorreporter.reportError(self.name, self.featuretype, message, m.matchgeometry)
