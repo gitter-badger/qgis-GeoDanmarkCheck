@@ -7,7 +7,7 @@ class OGRSPatialite(object):
         self.path = path
         self.layers = {}
         self.driver = ogr.GetDriverByName("SQLite")
-        self.data_source = self._create_data_source()
+        self._create_data_source()
 
     def __str__(self):
         return '{}'.format(self.path)
@@ -54,7 +54,7 @@ class OGRSPatialite(object):
         feature.Destroy()
 
     def _create_data_source(self):
-        data_source = self.driver.CreateDataSource(
+        self.data_source = self.driver.CreateDataSource(
             self.path,
             options=[
                 'SPATIALITE=YES',
@@ -62,7 +62,5 @@ class OGRSPatialite(object):
                 'OGR_SQLITE_SYNCHRONOUS=OFF'
             ]
         )
-        if data_source:
-            return data_source
 
 
