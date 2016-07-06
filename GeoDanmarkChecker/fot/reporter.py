@@ -28,11 +28,12 @@ class Reporter(object):
     def report(self, rulename, typeinfo, message, geometry, level):
         geometry = togeometry(geometry)
         fields = [
-            ('rulename', str(rulename)),
-            ('typeinfo', str(typeinfo)),
-            ('message', str(message)),
-            ('level', str(level))
+            ('rulename', unicode(rulename).encode('utf-8')),
+            ('typeinfo', unicode(typeinfo).encode('utf-8')),
+            ('message', unicode(message).encode('utf-8')),
+            ('level', unicode(level).encode('utf-8'))
         ]
+        print fields
         # QGis.flatType if we don't care about 25D and whatnot
         if QGis.flatType(geometry.wkbType()) == QGis.WKBLineString:
             self.db.add_feature_to_layer(
