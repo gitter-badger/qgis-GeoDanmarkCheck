@@ -72,12 +72,12 @@ class Reporter(object):
         # Add layer for points
         self.db.add_layer(
             'point',
-            ogr.wkbPoint,
+            ogr.wkbPoint25D,
             fields
         )
         # Add layer for polygons
         self.db.add_layer(
             'polygon',
-            ogr.wkbPolygon,
+            ogr.wkbPolygon25D,
             fields
         )
