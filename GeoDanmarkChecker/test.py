@@ -8,8 +8,8 @@ from fot.repository import Repository
 from fot.reporter import Reporter
 from fot.progress import ProgressReporter
 from fot.geomutils.featurematcher import PolygonMatcher, LineMatcher
-
 from fot.rules import RuleExecutor
+import os
 
 rules = []
 if True:
@@ -66,7 +66,10 @@ rules.append(
 
 with fot.qgisapp.QgisStandaloneApp(True) as app:
     print "App initialised"
-    reporter = Reporter("dummyfilename")
+    outfile = u'/Volumes/Macintosh HD/Users/asger/Code/qgis-GeoDanmarkCheck/testdata/output.sqlite'
+    if os.path.isfile(outfile):
+        os.remove(outfile)
+    reporter = Reporter(outfile)
     progress = ProgressReporter()
     before = Repository(u'/Volumes/Macintosh HD/Users/asger/Code/qgis-GeoDanmarkCheck/testdata/mapped_fot4.sqlite')
     after = Repository(u'/Volumes/Macintosh HD/Users/asger/Code/qgis-GeoDanmarkCheck/testdata/fot5.sqlite')
