@@ -18,8 +18,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import os
-import osgeo.ogr as ogr
-import osgeo.osr as osr
+from osgeo import ogr
+from osgeo import osr
 
 
 class OGRSPatialite(object):
