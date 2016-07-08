@@ -4,15 +4,34 @@ import fot.qgisapp
 from fot.rules.dataset.singlelayer import UniqueAttributeValue
 from fot.rules.dataset.singlelayer import AttributeRule
 from fot.rules.dualdataset.compareattributes import AttributesMustNotBeChanged
+from fot.rules.dualdataset.preliminaryobjects import PreliminaryObjectsRule
 from fot.repository import Repository
 from fot.reporter import Reporter
 from fot.progress import ProgressReporter
-from fot.geomutils.featurematcher import PolygonMatcher, LineMatcher
+from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher
 from fot.rules import RuleExecutor
 import os
 
 rules = []
 if True:
+
+    # Rules applying to ALL featuretypes
+    for t in fot.featuretype.featuretypes:
+        rules.append(
+            PreliminaryObjectsRule(
+                t.name + ' preliminary objects',
+                feature_type=t
+            )
+        )
+        rules.append(
+            UniqueAttributeValue(
+                t.name + ' fot_id unique',
+                feature_type=t,
+                attributename='fot_id'
+            )
+        )
+    # End for all t
+
     rules.append(
         AttributeRule(
             'Stream.vandloebstype',
@@ -37,7 +56,7 @@ if True:
             'Unchanged building UUID',
             feature_type=fot.featuretype.BYGNING,
             unchangedattributes=['bygning_id'],
-            featurematcher=PolygonMatcher(relativeareadeviation=0.5),
+            featurematcher=ApproximatePolygonMatcher(relativeareadeviation=0.5),
             beforefilter='bygning_id IS NOT NULL'
         )
     )
@@ -59,10 +78,12 @@ rules.append(
                 'fiktiv_brudt',
                 'tilogfrakoer_brudt',
                 'rundkoersel_brudt'],
-        featurematcher=LineMatcher(**vejmatchoptions),
+        featurematcher=ApproximateLineMatcher(**vejmatchoptions),
         beforefilter='vejkode IS NOT NULL'
     )
 )
+
+
 
 with fot.qgisapp.QgisStandaloneApp(True) as app:
     print "App initialised"

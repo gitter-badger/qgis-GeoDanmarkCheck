@@ -10,7 +10,7 @@ class ProgressReporter(object):
     def begintask(self, taskname, tasksize):
         self.taskname = taskname
         self.tasksize = tasksize
-        self.reportevery = tasksize / 50.0
+        self.reportevery = tasksize / 10.0
         self._nextreportat = 0
         self.completed(0)
 
@@ -23,6 +23,7 @@ class ProgressReporter(object):
     def completed_one(self):
         self.completed(self.taskcompleted + 1)
 
-    def _report(self, force = False):
+    def _report(self):
         # Better ways of reporting!
-        print "{0} {1}% complete".format(self.taskname, 100.0 * self.taskcompleted / self.tasksize)
+        percentcompleted = 100.0 * self.taskcompleted / self.tasksize if self.tasksize > 0 else 100
+        print "{0} {1}% complete".format(self.taskname, percentcompleted)

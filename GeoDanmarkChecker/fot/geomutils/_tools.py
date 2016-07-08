@@ -49,7 +49,7 @@ def bboxoverlaps(f1, f2):
     b2 = bbox(f2)
     return b1[0] < b2[2] and b1[2] > b2[0] and b1[1] < b2[3] and b1[3] > b2[1]
 
-def geometryequal(f1, f2, tolerance):
+def geometryequal(f1, f2, tolerance = 0.01):
     """Compares geometries coordinate by coordinate using specified tolerance"""
     g1 = togeometry(f1)
     g2 = togeometry(f2)

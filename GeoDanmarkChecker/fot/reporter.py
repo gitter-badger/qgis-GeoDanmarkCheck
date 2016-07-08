@@ -33,7 +33,6 @@ class Reporter(object):
             ('message', unicode(message).encode('utf-8')),
             ('level', unicode(level).encode('utf-8'))
         ]
-        print fields
         # QGis.flatType if we don't care about 25D and whatnot
         if QGis.flatType(geometry.wkbType()) == QGis.WKBLineString:
             self.db.add_feature_to_layer(

@@ -1,6 +1,8 @@
 from .comparerule import CompareRule
 from ... import Repository
 from ... import FeatureType
+from ...geomutils.featurematcher import MatchFinder
+
 
 class AttributesMustNotBeChanged(CompareRule):
     def __init__(self, name, feature_type, unchangedattributes, featurematcher, beforefilter=None, afterfilter=None):
@@ -21,10 +23,15 @@ class AttributesMustNotBeChanged(CompareRule):
         afterfeats = afterrepo.read(self.featuretype, attributes=self.unchangedattributes, feature_filter=self.afterfilter)
 
         progressreporter.begintask(self.name, len(beforefeats))
-        for m in self.matcher.match(beforefeats, afterfeats, progressreporter):
-            f1 = m.feature1
-            f2 = m.feature2
-            for attrib in self.unchangedattributes:
-                if not f1[attrib] == f2[attrib]:
-                    message = u'Attribute {0} changed from {1} to {2}'.format(attrib, f1[attrib], f2[attrib])
-                    errorreporter.reportError(self.name, self.featuretype, message, m.matchgeometry)
+        matchfinder = MatchFinder(afterfeats)
+        for f in beforefeats:
+            for m in matchfinder.findmatching(f, self.matcher):
+                f1 = m.feature1
+                f2 = m.feature2
+                for attrib in self.unchangedattributes:
+                    messages = []
+                    if not f1[attrib] == f2[attrib]:
+                        messages.append(u'Attribute {0} changed from {1} to {2}'.format(attrib, f1[attrib], f2[attrib]))
+                    if messages:
+                        errorreporter.reportError(self.name, self.featuretype, ';'.join(messages), m.matchgeometry)
+            progressreporter.completed_one()

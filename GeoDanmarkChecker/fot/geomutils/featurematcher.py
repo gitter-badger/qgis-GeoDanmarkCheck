@@ -1,7 +1,8 @@
-from . import FeatureIndex, togeometry, geometryequal, extractlinestrings
-from qgis.core import QgsGeometry, QgsGeometryEngine, QgsFeature
+from . import FeatureIndex, togeometry, geometryequal, extractlinestrings, shortestline
+from qgis.core import QgsGeometry
 
 # Classes which finds matching features in another collection of features
+
 
 class PreparedFeature(object):
     def __init__(self, feature):
@@ -11,56 +12,79 @@ class PreparedFeature(object):
         geomengine.prepareGeometry()
         self.preparedgeom = geomengine
 
+
 class FeatureMatch(object):
-    def __init__(self, f1, f2, matchgeom = None):
+    def __init__(self, f1, f2, matchgeom = None, exactmatch = False):
+        self.exactmatch = exactmatch
         self.feature1 = f1
         self.feature2 = f2
         self.matchgeometry = matchgeom
 
-class FeatureMatcher(object):
 
-    def __init__(self, coordinatetolerance = 0.01, bboxexpansion = 0.0, **kwargs):
-        self.coordinatetolerance = coordinatetolerance
-        self.bboxexpansion = bboxexpansion
+class MatchFinder(object):
+    def __init__(self, matchagainstfeatures):
+        self.features = matchagainstfeatures
+        self.indexedfeatures = FeatureIndex(matchagainstfeatures, usespatialindex=True)
 
-    def match(self, featurecollection1, featurecollection2, progressreporter = None):
-        indexedcollection2 = FeatureIndex(featurecollection2, usespatialindex=True)
-        for f in featurecollection1:
-            prep = PreparedFeature(f)
-            for m in self._oneagainstmany(prep, indexedcollection2):
-                yield m
-            progressreporter.completed_one()
-
-    def _oneagainstmany(self, prep, indexedfeaturecollection):
-        if not isinstance(indexedfeaturecollection, FeatureIndex):
-            raise TypeError("Expected FeatureIndex")
-
+    def findmatching(self, feature, matcher):
+        prep = PreparedFeature(feature)
         geom = prep.geom
         bbox = geom.boundingBox()
-        if self.bboxexpansion > 0:
-            bbox.buffer(self.bboxexpansion)
+        if matcher.bboxexpansion > 0:
+            bbox.buffer(matcher.bboxexpansion)
+        nearbyfeatures = self.indexedfeatures.geometryintersects(bbox)
+        for otherfeat in nearbyfeatures:
+            m = matcher.match(prep, otherfeat)
+            if m:
+                yield m
 
-        intersecting = indexedfeaturecollection.geometryintersects(bbox)
-        for otherfeature in intersecting:
-            othergeom = togeometry(otherfeature)
-            if geometryequal(geom, othergeom, self.coordinatetolerance):
-                yield FeatureMatch(prep.feature, otherfeature, geom)
-            else:
-                m = self.matchesfeature(prep, otherfeature)
-                if m:
-                    yield m
 
-class PolygonMatcher(FeatureMatcher):
+class ExactGeometryMatcher(object):
+
+    def __init__(self, coordinatetolerance=0.01, **kwargs):
+        self.coordinatetolerance = coordinatetolerance
+        self.bboxexpansion = 0.0
+
+    def match(self, preparedfeature, otherfeature):
+        return self.matchesexactly(preparedfeature, otherfeature)
+
+    def matchesexactly(self, preparedfeature, otherfeature):
+        othergeom = togeometry(otherfeature)
+        if geometryequal(preparedfeature.geom, othergeom, self.coordinatetolerance):
+            return FeatureMatch(preparedfeature.feature, otherfeature, othergeom, exactmatch=True)
+        return None
+
+
+class NearbyObjectsGeometryMatcher(ExactGeometryMatcher):
+    def __init__(self, **kwargs):
+        self.distancewithin = 5.0
+        self.bboxexpansion = self.distancewithin
+
+    def match(self, preparedfeature, otherfeature):
+        # If exact match - return that
+        m = self.matchesexactly(preparedfeature, otherfeature)
+        if m:
+            return m
+        line = shortestline(preparedfeature.geom, otherfeature)
+        if line.length() < self.distancewithin:
+            return FeatureMatch(preparedfeature.feature, otherfeature, line)
+
+
+class ApproximatePolygonMatcher(ExactGeometryMatcher):
 
     def __init__(self, **kwargs):
-        super(PolygonMatcher, self).__init__(**kwargs)
-
+        super(ApproximatePolygonMatcher, self).__init__(**kwargs)
         self.useareaintersection = False
         if 'relativeareadeviation' in kwargs:
             self.relativeareadeviation = float( kwargs['relativeareadeviation'] )
             self.useareaintersection = bool(self.relativeareadeviation)
 
-    def matchesfeature(self, preparedfeature, otherfeature):
+    def match(self, preparedfeature, otherfeature):
+        # If exact match - return that
+        m = self.matchesexactly(preparedfeature, otherfeature)
+        if m:
+            return m
+
         othergeom = togeometry(otherfeature)
         if self.useareaintersection:
             area1 = preparedfeature.preparedgeom.area()
@@ -73,10 +97,11 @@ class PolygonMatcher(FeatureMatcher):
                 return FeatureMatch(preparedfeature.feature, otherfeature, intersection)
         return None
 
-class LineMatcher(FeatureMatcher):
+
+class ApproximateLineMatcher(ExactGeometryMatcher):
 
     def __init__(self, **kwargs):
-        super(LineMatcher, self).__init__(**kwargs)
+        super(ApproximateLineMatcher, self).__init__(**kwargs)
         self.uselineintersection = True
         self.relativelengthdeviation = None
         self.minimumintersectionlength = 0
@@ -91,10 +116,15 @@ class LineMatcher(FeatureMatcher):
         if 'linebuffer' in kwargs:
             self.linebuffer = float(kwargs['linebuffer'])
             self.useareaintersection = True
+            self.bboxexpansion = self.linebuffer
 
-    def matchesfeature(self, preparedfeature, otherfeature):
+    def match(self, preparedfeature, otherfeature):
+        # If exact match - return that
+        m = self.matchesexactly(preparedfeature, otherfeature)
+        if m:
+            return m
+
         othergeom = togeometry(otherfeature)
-
         # Do we use exact intersection?
         if self.uselineintersection:
             intersection = preparedfeature.geom.intersection(othergeom) #preparedfeature.preparedgeom.intersection(othergeom.geometry())
@@ -115,7 +145,7 @@ class LineMatcher(FeatureMatcher):
         return None
 
 
-class PointMatcher(FeatureMatcher):
+class ApproximatePointMatcher(ExactGeometryMatcher):
     pass
 
 
