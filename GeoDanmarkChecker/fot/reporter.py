@@ -22,7 +22,12 @@ class Reporter(object):
         self.report(rulename, typeinfo, message, geometry, "warning")
 
     def report(self, rulename, typeinfo, message, geometry, level):
-        geometry = togeometry(geometry)
+        try:
+            geometry = togeometry(geometry)
+        except TypeError:
+            # TODO: handle this error aswell
+            print('Error in togeometry(geometry)')
+
         fields = [
             ('rulename', unicode(rulename).encode('utf-8')),
             ('typeinfo', unicode(typeinfo).encode('utf-8')),
