@@ -90,11 +90,9 @@ with fot.qgisapp.QgisStandaloneApp(True) as app:
     # Get current dir, get parent, and join with 'testdata'
     testdata_dir = os.path.join(
         os.path.dirname(os.path.realpath(__file__)),
-        os.path.abspath(
-            os.path.join(
-                os.path.dirname(os.path.realpath(__file__)),
-                os.pardir
-            )
+        os.path.join(
+            os.path.dirname(os.path.realpath(__file__)),
+            os.pardir
         ),
         'testdata'
     )
