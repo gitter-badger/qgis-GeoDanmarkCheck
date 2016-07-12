@@ -11,10 +11,6 @@ class Reporter(object):
 
     def __init__(self, output_path):
         # output file is path and filename is a db based on timestamp
-        self.layer = None
-        self.driver = None
-        self.feature = None
-        self.data_source = None
         self.output_path = output_path
         self._initialize_db()
 
