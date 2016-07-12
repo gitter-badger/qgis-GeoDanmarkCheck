@@ -110,7 +110,6 @@ with fot.qgisapp.QgisStandaloneApp(True) as app:
     exe = RuleExecutor(before, after)
     exe.execute(rules, reporter, progress)
 
-
     # from fot.geomutils import FeatureIndex
     # feats = after.read(fot.featuretype.BYGNING)
     # ix = FeatureIndex(feats, usespatialindex=True)
