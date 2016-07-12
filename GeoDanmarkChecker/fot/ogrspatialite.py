@@ -80,7 +80,7 @@ class OGRSPatialite(object):
             RuntimeError: in case a database is already on disk or if ogr fails
         """
         if os.path.isfile(self.path) or os.path.isdir(self.path):
-            RuntimeError('File already found on disk.')
+            raise RuntimeError('File already found on disk.')
 
         self.data_source = self.driver.CreateDataSource(
             self.path,
@@ -91,4 +91,4 @@ class OGRSPatialite(object):
             ]
         )
         if not self.data_source:
-            RuntimeError('Unknown error in ogr CreateDataSource.')
+            raise RuntimeError('Unknown error in ogr CreateDataSource.')
