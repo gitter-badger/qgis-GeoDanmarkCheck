@@ -70,7 +70,10 @@ class OGRSPatialite(object):
         feature.SetGeometry(
             ogr.CreateGeometryFromWkb(geometry.asWkb())
         )
-        layer.CreateFeature(feature)
+        if layer.CreateFeature(feature) != 0:
+            # TODO: Handle error on feature insertion (invalid geom?)
+            print('Error adding feature to layer: {}'.format(feature))
+
         feature.Destroy()
 
     def _create_data_source(self):
@@ -90,5 +93,5 @@ class OGRSPatialite(object):
                 'OGR_SQLITE_SYNCHRONOUS=OFF'
             ]
         )
-        if not self.data_source:
+        if self.data_source is None:
             raise RuntimeError('Unknown error in ogr CreateDataSource.')
