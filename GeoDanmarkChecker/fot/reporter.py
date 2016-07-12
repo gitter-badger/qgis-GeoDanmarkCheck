@@ -19,10 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from .geomutils import togeometry
-from qgis.core import (
-    QgsFeature,
-    QGis
-)
+from qgis.core import QGis
 import osgeo.ogr as ogr
 from .ogrspatialite import OGRSPatialite
 
