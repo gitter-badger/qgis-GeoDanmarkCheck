@@ -10,6 +10,8 @@ from fot.reporter import Reporter
 from fot.progress import ProgressReporter
 from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher
 from fot.rules import RuleExecutor
+from fot.gmlimporter import gml_to_spatialite
+from fot.console_reporter import ConsoleReporter
 import os
 
 rules = []
@@ -83,17 +85,30 @@ rules.append(
     )
 )
 
-
-
 with fot.qgisapp.QgisStandaloneApp(True) as app:
     print "App initialised"
-    outfile = u'/Volumes/Macintosh HD/Users/asger/Code/qgis-GeoDanmarkCheck/testdata/output.sqlite'
+    # Get current dir, get parent, and join with 'testdata'
+    testdata_dir = os.path.join(
+        os.path.dirname(os.path.realpath(__file__)),
+        os.path.abspath(
+            os.path.join(
+                os.path.dirname(os.path.realpath(__file__)),
+                os.pardir
+            )
+        ),
+        'testdata'
+    )
+    outfile = os.path.join(testdata_dir, 'output.sqlite')
     if os.path.isfile(outfile):
         os.remove(outfile)
+    # gml_file = os.path.join(testdata_dir, '607_Fredericia_fot5_fra_prod.gml')
+    # gml_to_spatialite(gml_file)
+
     reporter = Reporter(outfile)
+    # reporter = ConsoleReporter('qgis')
     progress = ProgressReporter()
-    before = Repository(u'/Volumes/Macintosh HD/Users/asger/Code/qgis-GeoDanmarkCheck/testdata/mapped_fot4.sqlite')
-    after = Repository(u'/Volumes/Macintosh HD/Users/asger/Code/qgis-GeoDanmarkCheck/testdata/fot5.sqlite')
+    before = Repository(os.path.join(testdata_dir, 'mapped_fot4.sqlite'))
+    after = Repository(os.path.join(testdata_dir, 'fot5.sqlite'))
     exe = RuleExecutor(before, after)
     exe.execute(rules, reporter, progress)
 
