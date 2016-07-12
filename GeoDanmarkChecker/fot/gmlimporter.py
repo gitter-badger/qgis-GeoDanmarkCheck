@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Routines for quality control of GeoDanmark map data
 Copyright (C) 2016
