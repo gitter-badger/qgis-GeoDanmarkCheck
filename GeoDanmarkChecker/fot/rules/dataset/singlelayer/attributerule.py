@@ -12,6 +12,6 @@ class AttributeRule(SingleFeatureRule):
         try:
             value = feature[self.attributename]
             if not self.isvalidfunction(value):
-                reporter.reportError(self.name, self.featuretype,self.attributename + "=" + unicode(value) + " not valid", feature)
+                reporter.error(self.name, self.featuretype, self.attributename + "=" + unicode(value) + " not valid", feature)
         except:
-            reporter.reportError(self.name, self.featuretype, "Error processing attribute: " + self.attributename, feature)
+            reporter.error(self.name, self.featuretype, "Error processing attribute: " + self.attributename, feature)

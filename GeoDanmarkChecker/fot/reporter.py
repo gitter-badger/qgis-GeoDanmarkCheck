@@ -32,10 +32,10 @@ class Reporter(object):
         self._initialize_db()
 
     # Maybe take a Rule as first argument? Rule knows its name and should now what types are touched
-    def reportError(self, rulename, typeinfo, message, geometry):
+    def error(self, rulename, typeinfo, message, geometry):
         self.report(rulename, typeinfo, message, geometry, "error")
 
-    def reportWarning(self, rulename, typeinfo, message, geometry):
+    def warning(self, rulename, typeinfo, message, geometry):
         self.report(rulename, typeinfo, message, geometry, "warning")
 
     def report(self, rulename, typeinfo, message, geometry, level):

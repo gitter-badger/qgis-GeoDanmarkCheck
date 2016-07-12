@@ -36,12 +36,12 @@ class PreliminaryObjectsRule(CompareRule):
             matches = afterindex.attributeequals(self.idcolumn, fot_id)
 
             if not matches:
-                errorreporter.reportError(self.name, self.featuretype, 'Preliminary object ({0}={1}) deleted'.format(self.idcolumn, fot_id), f)
+                errorreporter.error(self.name, self.featuretype, 'Preliminary object ({0}={1}) deleted'.format(self.idcolumn, fot_id), f)
 
             # Should be checked elsewhere
             if len(matches) > 1:
                 line = shortestline(matches[0], matches[1])
-                errorreporter.reportError(self.name, self.featuretype, 'Multiple objects  with {0}={1}'.format(self.idcolumn, fot_id), line)
+                errorreporter.error(self.name, self.featuretype, 'Multiple objects  with {0}={1}'.format(self.idcolumn, fot_id), line)
 
             newf = matches[0]
 

@@ -33,5 +33,5 @@ class AttributesMustNotBeChanged(CompareRule):
                     if not f1[attrib] == f2[attrib]:
                         messages.append(u'Attribute {0} changed from {1} to {2}'.format(attrib, f1[attrib], f2[attrib]))
                     if messages:
-                        errorreporter.reportError(self.name, self.featuretype, ';'.join(messages), m.matchgeometry)
+                        errorreporter.error(self.name, self.featuretype, ';'.join(messages), m.matchgeometry)
             progressreporter.completed_one()
