@@ -26,7 +26,7 @@ def ogr_convert(
     source_driver,
     destination,
     destination_driver,
-    options=None
+    options=[]
 ):
     """ Converts the source to the output format
 
@@ -48,22 +48,14 @@ def ogr_convert(
     if not source:
         raise RuntimeError('Unable to open input file: {}'.format(source))
 
-    if options:
-        destination = ogr.GetDriverByName(destination_driver).CopyDataSource(
-            source,
-            destination,
-            options
-        )
-    else:
-        destination = ogr.GetDriverByName(destination_driver).CopyDataSource(
-            source,
-            destination
-        )
-
+    destination = ogr.GetDriverByName(destination_driver).CopyDataSource(
+        source,
+        destination,
+        options
+    )
     if not destination:
-        raise RuntimeError('Unable to create output file: {}'.format(
-                destination
-            )
+        raise RuntimeError(
+            'Unable to create output file: {}'.format(destination)
         )
 
     return True
