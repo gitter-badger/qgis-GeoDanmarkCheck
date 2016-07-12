@@ -21,7 +21,6 @@ from qgis.core import QgsMessageLog
 
 
 class QgisLogger(object):
-    # TODO: either dont print geometry, or print some textual repr, probably fails now
     def __init__(self, plugin_name):
         self.plugin_name = plugin_name
 

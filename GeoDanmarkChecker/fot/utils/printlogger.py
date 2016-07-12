@@ -20,7 +20,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 class PrintLogger(object):
-    # TODO: either dont print geometry, or print some textual representation currently it fails
     def info(self, rulename, typeinfo, message, geometry):
         self.log(rulename, typeinfo, message, geometry, 'info')
 

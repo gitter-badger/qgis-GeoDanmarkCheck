@@ -50,6 +50,7 @@ class ConsoleReporter(object):
 
         raise ValueError('Reporter type has to be either qgis or log')
 
+    # TODO: make geometry a textual representation
     def error(self, rulename, typeinfo, message, geometry):
         self.reporter.error(rulename, typeinfo, message, geometry)
 
