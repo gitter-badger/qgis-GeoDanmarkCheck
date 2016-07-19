@@ -20,17 +20,31 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
-from PyQt4.QtGui import QAction, QIcon
+from PyQt4.QtCore import (
+    QSettings,
+    QTranslator,
+    qVersion,
+    QCoreApplication
+)
+from PyQt4.QtGui import (
+    QAction,
+    QIcon
+)
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
-from geodanmark_checker_dialog import GeoDanmarkCheckerDialog
+from .ui.geodanmark_checker_dialog import GeoDanmarkCheckerDialog
+from .rules import rules_set
+from fot.repository import Repository
+from fot.reporter import Reporter
+from fot.progress import ProgressReporter
+from fot.repository import Repository
+from fot.rules import RuleExecutor
 import os.path
 
 
 class GeoDanmarkChecker:
-    """QGIS Plugin Implementation."""
+    """ QGIS Plugin Implementation. """
 
     def __init__(self, iface):
         """Constructor.
@@ -49,7 +63,8 @@ class GeoDanmarkChecker:
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
-            'GeoDanmarkChecker_{}.qm'.format(locale))
+            'GeoDanmarkChecker_{}.qm'.format(locale)
+        )
 
         if os.path.exists(locale_path):
             self.translator = QTranslator()
@@ -59,14 +74,12 @@ class GeoDanmarkChecker:
                 QCoreApplication.installTranslator(self.translator)
 
         # Create the dialog (after translation) and keep reference
-        self.dlg = GeoDanmarkCheckerDialog()
+        rules = rules_set
+        self.dlg = GeoDanmarkCheckerDialog(rules)
 
         # Declare instance attributes
         self.actions = []
         self.menu = self.tr(u'&GeoDanmark Checker')
-        # TODO: We are going to let the user set this up in a future iteration
-        self.toolbar = self.iface.addToolBar(u'GeoDanmarkChecker')
-        self.toolbar.setObjectName(u'GeoDanmarkChecker')
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -83,101 +96,28 @@ class GeoDanmarkChecker:
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
         return QCoreApplication.translate('GeoDanmarkChecker', message)
 
-
-    def add_action(
-        self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None):
-        """Add a toolbar icon to the toolbar.
-
-        :param icon_path: Path to the icon for this action. Can be a resource
-            path (e.g. ':/plugins/foo/bar.png') or a normal file system path.
-        :type icon_path: str
-
-        :param text: Text that should be shown in menu items for this action.
-        :type text: str
-
-        :param callback: Function to be called when the action is triggered.
-        :type callback: function
-
-        :param enabled_flag: A flag indicating if the action should be enabled
-            by default. Defaults to True.
-        :type enabled_flag: bool
-
-        :param add_to_menu: Flag indicating whether the action should also
-            be added to the menu. Defaults to True.
-        :type add_to_menu: bool
-
-        :param add_to_toolbar: Flag indicating whether the action should also
-            be added to the toolbar. Defaults to True.
-        :type add_to_toolbar: bool
-
-        :param status_tip: Optional text to show in a popup when mouse pointer
-            hovers over the action.
-        :type status_tip: str
-
-        :param parent: Parent widget for the new action. Defaults None.
-        :type parent: QWidget
-
-        :param whats_this: Optional text to show in the status bar when the
-            mouse pointer hovers over the action.
-
-        :returns: The action that was created. Note that the action is also
-            added to self.actions list.
-        :rtype: QAction
-        """
-
-        icon = QIcon(icon_path)
-        action = QAction(icon, text, parent)
-        action.triggered.connect(callback)
-        action.setEnabled(enabled_flag)
-
-        if status_tip is not None:
-            action.setStatusTip(status_tip)
-
-        if whats_this is not None:
-            action.setWhatsThis(whats_this)
-
-        if add_to_toolbar:
-            self.toolbar.addAction(action)
-
-        if add_to_menu:
-            self.iface.addPluginToMenu(
-                self.menu,
-                action)
-
-        self.actions.append(action)
-
-        return action
-
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/GeoDanmarkChecker/icon.png'
-        self.add_action(
-            icon_path,
-            text=self.tr(u'Check GeoDanmark Data'),
-            callback=self.run,
-            parent=self.iface.mainWindow())
-
+        self.check_geodanmark_action = QAction(
+            QIcon(':/plugins/GeoDanmarkChecker/icon.png'),
+            self.tr(u'Check GeoDanmark Data'),
+            self.iface.mainWindow()
+        )
+        self.check_geodanmark_action.triggered.connect(self.run)
+        self.check_geodanmark_action.setEnabled(True)
+        self.iface.addPluginToMenu(self.menu, self.check_geodanmark_action)
+        self.iface.addToolBarIcon(self.check_geodanmark_action)
+        self.actions.append(self.check_geodanmark_action)
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
             self.iface.removePluginMenu(
                 self.tr(u'&GeoDanmark Checker'),
-                action)
+                action
+            )
             self.iface.removeToolBarIcon(action)
-        # remove the toolbar
-        del self.toolbar
-
 
     def run(self):
         """Run method that performs all the real work"""
@@ -187,6 +127,22 @@ class GeoDanmarkChecker:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
+            # TODO: error handling if no before/after file
+            reporter = Reporter(
+                os.path.join(
+                    os.path.dirname(
+                        self.dlg.before_dataset_input.text()
+                    ),
+                    'geodk_check_output.sqlite'
+                )
+            )
+            progress = ProgressReporter()
+            before_file = self.dlg.before_dataset_input.text()
+            after_file = self.dlg.after_dataset_input.text()
+
+            rules = self.dlg.get_rules()
+            exe = RuleExecutor(
+                Repository(before_file),
+                Repository(after_file)
+            )
+            exe.execute(rules, reporter, progress)
