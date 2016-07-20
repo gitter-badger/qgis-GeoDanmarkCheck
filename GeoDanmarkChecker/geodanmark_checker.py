@@ -154,17 +154,18 @@ class GeoDanmarkChecker:
         result = self.dlg.exec_()
         # See if OK was pressed
         if result:
-            # TODO: error handling if no before/after file
+            before_file = self.dlg.before_dataset_input.text()
+            after_file = self.dlg.after_dataset_input.text()
+            if not before_file or not after_file:
+                # TODO: error handling if no before/after file
+                pass
+
             output_file = os.path.join(
-                os.path.dirname(
-                    self.dlg.before_dataset_input.text()
-                ),
+                os.path.dirname(before_file),
                 'geodk_check_output.sqlite'
             )
             reporter = Reporter(output_file)
             progress = ProgressDialog(self.iface.messageBar())
-            before_file = self.dlg.before_dataset_input.text()
-            after_file = self.dlg.after_dataset_input.text()
 
             rules = self.dlg.get_rules()
             exe = RuleExecutor(

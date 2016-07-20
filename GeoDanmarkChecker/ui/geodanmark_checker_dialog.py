@@ -81,6 +81,7 @@ class GeoDanmarkCheckerDialog(QDialog, FORM_CLASS):
             return
 
         self.rules_tree.clear()
+        self.rules_tree.addTopLevelItem(TreeWidgetItem('All'))
 
         for key, rules in self.rules_set.rules.iteritems():
             # Create the root item
@@ -112,6 +113,12 @@ class GeoDanmarkCheckerDialog(QDialog, FORM_CLASS):
     def _tree_item_changed(self, item, column):
         """ Triggered on a change event of a Tree Widget. """
         checked = item.checkState(column) == Qt.Checked
+
+        # Special choose all TreeWidget
+        if item.display_name == 'All':
+            self.check_all(check=checked)
+            return
+
         # We just checked a parent node
         if checked and not item.parent():
             self._check_all_childen(item)
@@ -131,6 +138,20 @@ class GeoDanmarkCheckerDialog(QDialog, FORM_CLASS):
         for i in range(parent.childCount()):
             item = parent.child(i)
             item.setCheckState(0, status)
+
+    def check_all(self, check=True):
+        """ Checks or uncheck all
+
+        Args:
+            check: true if check, false if uncheck
+        """
+        status = Qt.Checked if check else Qt.Unchecked
+        iterator = QTreeWidgetItemIterator(self.rules_tree)
+        item = iterator.value()
+        while item:
+            item.setCheckState(0, status)
+            iterator += 1
+            item = iterator.value()
 
     def get_rules(self):
         """ Returns a lost of the checked off rules """
