@@ -30,12 +30,16 @@ from PyQt4.QtGui import (
     QAction,
     QIcon
 )
+from qgis.core import (
+    QgsMapLayerRegistry,
+    QgsDataSourceURI,
+    QgsVectorLayer
+)
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
 from .ui.geodanmark_checker_dialog import GeoDanmarkCheckerDialog
 from .rules import rules_set
-from fot.repository import Repository
 from fot.reporter import Reporter
 from fot.progress import ProgressReporter
 from fot.repository import Repository
@@ -119,6 +123,28 @@ class GeoDanmarkChecker:
             )
             self.iface.removeToolBarIcon(action)
 
+    def add_spatialite_layer(self, sqlite):
+        """ Adds an sqlite database as layers, expects layers: linestring,
+        point and polygon. """
+
+        tables = ['linestring', 'point', 'polygon']
+        for table in tables:
+            uri = QgsDataSourceURI()
+            uri.setDatabase(sqlite)
+            uri.setDataSource('', table, 'GEOMETRY')
+            # Create new layer
+            layer = QgsVectorLayer(uri.uri(), table, 'spatialite')
+            if not layer:
+                print('error creating layer')
+            # Set encoding on the layer
+            layer.setProviderEncoding(u'UTF-8')
+            layer.dataProvider().setEncoding(u'UTF-8')
+            # TODO: uncomment below once we have the style available
+            # layer.loadNamedStyle('default_style.gml')
+            # Add layer to qgis
+            if not QgsMapLayerRegistry.instance().addMapLayer(layer):
+                print('Unable to add layer: {}'.format(table))
+
     def run(self):
         """Run method that performs all the real work"""
         # show the dialog
@@ -128,14 +154,13 @@ class GeoDanmarkChecker:
         # See if OK was pressed
         if result:
             # TODO: error handling if no before/after file
-            reporter = Reporter(
-                os.path.join(
-                    os.path.dirname(
-                        self.dlg.before_dataset_input.text()
-                    ),
-                    'geodk_check_output.sqlite'
-                )
+            output_file = os.path.join(
+                os.path.dirname(
+                    self.dlg.before_dataset_input.text()
+                ),
+                'geodk_check_output.sqlite'
             )
+            reporter = Reporter(output_file)
             progress = ProgressReporter()
             before_file = self.dlg.before_dataset_input.text()
             after_file = self.dlg.after_dataset_input.text()
@@ -146,3 +171,4 @@ class GeoDanmarkChecker:
                 Repository(after_file)
             )
             exe.execute(rules, reporter, progress)
+            self.add_spatialite_layer(output_file)
