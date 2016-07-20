@@ -162,7 +162,7 @@ class GeoDanmarkChecker:
                 'geodk_check_output.sqlite'
             )
             reporter = Reporter(output_file)
-            progress = ProgressDialog(self.iface)
+            progress = ProgressDialog(self.iface.messageBar())
             before_file = self.dlg.before_dataset_input.text()
             after_file = self.dlg.after_dataset_input.text()
 
@@ -173,3 +173,5 @@ class GeoDanmarkChecker:
             )
             exe.execute(rules, reporter, progress)
             self.add_spatialite_layer(output_file)
+            # clean up the progress widgets
+            self.iface.messageBar().clearWidgets()

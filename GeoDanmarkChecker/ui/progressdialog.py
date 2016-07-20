@@ -23,28 +23,28 @@ from PyQt4.QtCore import Qt
 
 
 class ProgressDialog(ProgressReporter):
-    def __init__(self, iface):
+    def __init__(self, message_bar):
         super(ProgressReporter, self).__init__()
         self.progress_bar = QProgressBar()
         self.progress_bar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        self.iface = iface
+        self.progress_bar.setTextVisible(True)
+        self.progress_bar.setEnabled(True)
+        self.message_bar = message_bar
         self.widget = None
 
     def begintask(self, taskname, tasksize):
         self.progress_bar.setRange(0, tasksize)
 
-        self.widget = self.iface.messageBar().createMessage(
-            taskname,
-            " Progress:"
+        self.widget = self.message_bar.createMessage(
+            'Currently processing rule: ',
+            taskname
         )
         self.widget.layout().addWidget(self.progress_bar)
-        self.iface.messageBar().pushWidget(
+
+        self.message_bar.pushWidget(
             self.widget,
-            self.iface.messageBar().INFO
+            self.message_bar.INFO
         )
-        # TODO: maybe below is needed
-        # self.iface.messageBar().clearWidgets()
-        # self.iface.mapCanvas().refresh()
         super(ProgressDialog, self).begintask(taskname, tasksize)
 
     def completed_one(self):
