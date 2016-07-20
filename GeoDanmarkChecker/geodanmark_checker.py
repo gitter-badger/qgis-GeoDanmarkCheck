@@ -41,7 +41,8 @@ import resources
 from .ui.geodanmark_checker_dialog import GeoDanmarkCheckerDialog
 from .rules import rules_set
 from fot.reporter import Reporter
-from fot.progress import ProgressReporter
+# from fot.progress import ProgressReporter
+from .ui.progressdialog import ProgressDialog
 from fot.repository import Repository
 from fot.rules import RuleExecutor
 import os.path
@@ -161,7 +162,7 @@ class GeoDanmarkChecker:
                 'geodk_check_output.sqlite'
             )
             reporter = Reporter(output_file)
-            progress = ProgressReporter()
+            progress = ProgressDialog(self.iface)
             before_file = self.dlg.before_dataset_input.text()
             after_file = self.dlg.after_dataset_input.text()
 
