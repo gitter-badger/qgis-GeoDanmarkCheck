@@ -11,7 +11,6 @@ from fot.progress import ProgressReporter
 from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher
 from fot.rules import RuleExecutor
 from fot.gmlimporter import gml_to_spatialite
-from fot.console_reporter import ConsoleReporter
 import os
 
 rules = []
