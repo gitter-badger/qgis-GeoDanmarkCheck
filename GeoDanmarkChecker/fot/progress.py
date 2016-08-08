@@ -10,7 +10,7 @@ class ProgressReporter(object):
     def begintask(self, taskname, tasksize):
         self.taskname = taskname
         self.tasksize = tasksize
-        self.reportevery = tasksize / 10.0
+        self.reportevery = tasksize / 1.0
         self._nextreportat = 0
         self.completed(0)
 

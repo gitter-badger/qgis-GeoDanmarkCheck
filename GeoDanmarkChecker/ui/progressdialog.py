@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 from ..fot.progress import ProgressReporter
-from PyQt4.QtGui import QProgressBar
+from PyQt4.QtGui import QProgressBar, QApplication
 from PyQt4.QtCore import Qt
 
 
@@ -47,6 +47,6 @@ class ProgressDialog(ProgressReporter):
         )
         super(ProgressDialog, self).begintask(taskname, tasksize)
 
-    def completed_one(self):
-        super(ProgressDialog, self).completed(self.taskcompleted + 1)
+    def _report(self):
         self.progress_bar.setValue(self.taskcompleted)
+        QApplication.processEvents()
