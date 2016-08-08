@@ -61,6 +61,11 @@ class GeoDanmarkChecker:
         """
         # Save reference to the QGIS interface
         self.iface = iface
+
+        # For github-updater
+        self.github_owner = 'Septima'
+        self.github_repository = 'qgis-GeoDanmarkCheck'
+
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
@@ -104,6 +109,17 @@ class GeoDanmarkChecker:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
+        # Try and setup github updater
+        try:
+            from github import addUpdatePluginMenu
+            addUpdatePluginMenu(
+                "GeoDanmark Checker",
+                self.github_owner,
+                self.github_repository
+            )
+        except ImportError:
+            pass
+
         self.check_geodanmark_action = QAction(
             QIcon(':/plugins/GeoDanmarkChecker/icon.png'),
             self.tr(u'Check GeoDanmark Data'),
@@ -117,6 +133,14 @@ class GeoDanmarkChecker:
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
+
+        # Try and remove the github updater plugin menu
+        try:
+            from github import removeUpdatePluginMenu
+            removeUpdatePluginMenu("GeoDanmark Checker")
+        except ImportError:
+            pass
+
         for action in self.actions:
             self.iface.removePluginMenu(
                 self.tr(u'&GeoDanmark Checker'),
