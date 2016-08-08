@@ -34,7 +34,7 @@ class PrintLogger(object):
 
     def log(self, rulename, typeinfo, message, geometry, level):
         print(
-            '{level} - {rulename} - {typeinfo} - {message} - {geom}'.format(
+            u'{level} - {rulename} - {typeinfo} - {message} - {geom}'.format(
                 level=level,
                 rulename=rulename,
                 typeinfo=typeinfo,
