@@ -58,14 +58,6 @@ for t in fot.featuretype.featuretypes:
             feature_type=t
         )
     )
-    rules_set.add_rule(
-        'Unique Attribute Value',
-        UniqueAttributeValue(
-            t.name + ' fot_id unique',
-            feature_type=t,
-            attributename='fot_id'
-        )
-    )
 
 rules_set.add_rule_category('Vandloebstype')
 rules_set.add_rule(
@@ -74,7 +66,7 @@ rules_set.add_rule(
         'Stream.vandloebstype',
         fot.featuretype.VANDLOEBSMIDTE_BRUDT,
         attributename='vandloebstype',
-        isvalidfunction=lambda val: val in [u'XXAlmindelig', u'Gennem sø', u'Rørlagt']
+        isvalidfunction=lambda val: val in [u'Almindelig', u'Gennem sø', u'Rørlagt']
     )
 )
 
@@ -90,10 +82,10 @@ rules_set.add_rule(
     )
 )
 
-rules_set.add_rule_category('Unchanged road attribs')
-vejmatchoptions = {'minimumintersectionlength': 1.0}
+rules_set.add_rule_category('Unchanged network attribs')
+vejmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
 rules_set.add_rule(
-    'Unchanged road attribs',
+    'Unchanged network attribs',
     AttributesMustNotBeChanged(
         'Unchanged road attribs',
         feature_type=fot.featuretype.VEJMIDTE_BRUDT,
@@ -108,8 +100,24 @@ rules_set.add_rule(
                 'plads_brudt',
                 'fiktiv_brudt',
                 'tilogfrakoer_brudt',
-                'rundkoersel_brudt'],
+                'rundkoersel_brudt',
+                #'niveau'
+        ],
         featurematcher=ApproximateLineMatcher(**vejmatchoptions),
         beforefilter='vejkode IS NOT NULL'
+    )
+)
+
+railmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
+rules_set.add_rule(
+    'Unchanged network attribs',
+    AttributesMustNotBeChanged(
+        'Unchanged rail attribs',
+        feature_type=fot.featuretype.JERNBANE_BRUDT,
+        unchangedattributes=[
+                'ejer_jernbane',
+                'sportype',
+        ],
+        featurematcher=ApproximateLineMatcher(**vejmatchoptions),
     )
 )
