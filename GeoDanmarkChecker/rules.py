@@ -113,3 +113,5 @@ rules_set.add_rule(
         beforefilter='vejkode IS NOT NULL'
     )
 )
+
+rules_set = [rules_set, rules_set]
