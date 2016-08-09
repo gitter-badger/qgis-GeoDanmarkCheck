@@ -111,9 +111,9 @@ class ApproximatePolygonMatcher(ExactGeometryMatcher):
             area2 = othergeom.area()
             intersection = preparedfeature.preparedgeom.intersection(othergeom.geometry())
             intersectionarea = intersection.area()
-            diff1 = abs(area1 - intersectionarea) / area1
-            diff2 = abs(area2 - intersectionarea) / area2
-            if diff1 < self.relativeareadeviation or diff2 < self.relativeareadeviation:
+            diff1 = intersectionarea / area1
+            diff2 = intersectionarea / area2
+            if diff1 > self.relativeareadeviation or diff2 > self.relativeareadeviation:
                 return FeatureMatch(preparedfeature.feature, otherfeature, intersection)
         return None
 
@@ -135,7 +135,7 @@ class ApproximateLineMatcher(ExactGeometryMatcher):
         self.linebuffer = self.coordinatetolerance
         if 'linebuffer' in kwargs:
             self.linebuffer = float(kwargs['linebuffer'])
-            self.useareaintersection = True
+            self.usebufferintersection = True
             self.bboxexpansion = self.linebuffer
 
     def match(self, preparedfeature, otherfeature):
@@ -147,20 +147,27 @@ class ApproximateLineMatcher(ExactGeometryMatcher):
         othergeom = togeometry(otherfeature)
         # Do we use exact intersection?
         if self.uselineintersection:
-            intersection = preparedfeature.geom.intersection(othergeom) #preparedfeature.preparedgeom.intersection(othergeom.geometry())
+            if self.linebuffer:
+                # buffer( radius, segments, endcapstyle (2=flat), joinstyle(1=round), mitrelimit)
+                isectgeom = preparedfeature.geom.buffer(self.linebuffer, 3, 2, 1, 0)
+            else:
+                isectgeom = preparedfeature.geom
+            intersection = isectgeom.intersection(othergeom) #preparedfeature.preparedgeom.intersection(othergeom.geometry())
             isectlength = intersection.length()
 
-            if isectlength and isectlength > self.minimumintersectionlength:
+            if isectlength:
                 line = extractlinestrings(intersection)
                 # If we actually have an intersection - not just points
-                if self.relativelengthdeviation is None:
+                if self.relativelengthdeviation is None and isectlength > self.minimumintersectionlength:
                     return FeatureMatch(preparedfeature.feature, otherfeature, line)
                 else:
                     l1 = preparedfeature.geom.length()
                     l2 = othergeom.length()
-                    diff1 = abs(l1 - isectlength) / l1
-                    diff2 = abs(l2 - isectlength) / l2
-                    if diff1 < self.relativelengthdeviation or diff2 < self.relativeareadeviation:
+                    diff1 = isectlength / l1
+                    diff2 = isectlength / l2
+                    if diff1 > self.relativelengthdeviation \
+                            or diff2 > self.relativelengthdeviation \
+                            or isectlength > self.minimumintersectionlength:
                         return FeatureMatch(preparedfeature.feature, otherfeature, line)
         return None
 
