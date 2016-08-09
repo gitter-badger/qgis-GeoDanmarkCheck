@@ -39,11 +39,15 @@ class RuleExecutor:
             if not isinstance(r, Rule):
                 raise Exception("Unknown rule type: " + str(r))
 
-            if isinstance(r, CompareRule):
-                r.execute(self.before, self.after, errorreporter, progressreporter)
-            elif isinstance(r, DatasetRule):
-                # For now just execute on after case. Maybe allow user to select
-                r.execute(self.after, errorreporter, progressreporter)
-            else:
-                raise TypeError("Unkown rule type: " + str(r))
+            try:
+                if isinstance(r, CompareRule):
+                    r.execute(self.before, self.after, errorreporter, progressreporter)
+                elif isinstance(r, DatasetRule):
+                    # For now just execute on after case. Maybe allow user to select
+                    r.execute(self.after, errorreporter, progressreporter)
+                else:
+                    raise TypeError("Unkown rule type: " + str(r))
+            except Exception as e:
+                errorreporter.error(
+                    r.name, "", "Exception when processing rule {0}. Message: {1}".format(r.name, str(e)), None)
 
