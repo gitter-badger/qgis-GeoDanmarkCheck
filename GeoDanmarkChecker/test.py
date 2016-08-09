@@ -25,10 +25,11 @@ from fot.rules.dataset.singlelayer import AttributeRule
 from fot.rules.dualdataset.compareattributes import AttributesMustNotBeChanged
 from fot.rules.dualdataset.preliminaryobjects import PreliminaryObjectsRule
 from fot.repository import Repository
-from fot.reporter import Reporter
+from fot.consolereporter import ConsoleReporter
 from fot.progress import ProgressReporter
 from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher
 from fot.rules import RuleExecutor
+from fot.reporter import Reporter
 from fot.gmlimporter import gml_to_spatialite
 import os
 
@@ -43,13 +44,14 @@ if True:
                 feature_type=t
             )
         )
-        rules.append(
-            UniqueAttributeValue(
-                t.name + ' fot_id unique',
-                feature_type=t,
-                attributename='fot_id'
-            )
-        )
+        # rules.append(
+        #     UniqueAttributeValue(
+        #         t.name + ' fot_id unique',
+        #         feature_type=t,
+        #         attributename='FOT_ID',
+        #         filter='FOT_ID IS NOT NULL'
+        #     )
+        # )
     # End for all t
 
     rules.append(
@@ -57,7 +59,7 @@ if True:
             'Stream.vandloebstype',
             fot.featuretype.VANDLOEBSMIDTE_BRUDT,
             attributename='vandloebstype',
-            isvalidfunction=lambda val: val in [u'XXAlmindelig', u'Gennem sø', u'Rørlagt']
+            isvalidfunction=lambda val: val in [u'Almindelig', u'Gennem sø', u'Rørlagt']
             # validvalues=[u'XXAlmindelig', u'Gennem sø', u'Rørlagt'] #[u'Almindelig', u'Gennem sø', u'Rørlagt']
         )
     )
@@ -81,7 +83,7 @@ if True:
         )
     )
 
-vejmatchoptions = {'minimumintersectionlength': 1.0}  # Vi gider ikke høre om stykker kortere end 1 meter
+vejmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
 rules.append(
     AttributesMustNotBeChanged(
         'Unchanged road attribs',
@@ -97,9 +99,25 @@ rules.append(
                 'plads_brudt',
                 'fiktiv_brudt',
                 'tilogfrakoer_brudt',
-                'rundkoersel_brudt'],
+                'rundkoersel_brudt',
+                #'niveau'
+        ],
         featurematcher=ApproximateLineMatcher(**vejmatchoptions),
         beforefilter='vejkode IS NOT NULL'
+    )
+)
+
+railmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
+rules.append(
+    AttributesMustNotBeChanged(
+        'Unchanged rail attribs',
+        feature_type=fot.featuretype.JERNBANE_BRUDT,
+        unchangedattributes=[
+                'ejer_jernbane',
+                'sportype',
+        ],
+        featurematcher=ApproximateLineMatcher(**vejmatchoptions),
+        #beforefilter='vejkode IS NOT NULL'
     )
 )
 
@@ -119,12 +137,11 @@ with fot.qgisapp.QgisStandaloneApp(True) as app:
         os.remove(outfile)
     # gml_file = os.path.join(testdata_dir, '607_Fredericia_fot5_fra_prod.gml')
     # gml_to_spatialite(gml_file)
-
     reporter = Reporter(outfile)
-    # reporter = ConsoleReporter('qgis')
+    #reporter = ConsoleReporter('log')
     progress = ProgressReporter()
-    before = Repository(os.path.join(testdata_dir, 'mapped_fot4.sqlite'))
-    after = Repository(os.path.join(testdata_dir, 'fot5.sqlite'))
+    before = Repository(os.path.join(testdata_dir, 'original_fil.gml'))
+    after = Repository(os.path.join(testdata_dir, 'producentfil_med_fejl.gml'))
     exe = RuleExecutor(before, after)
     exe.execute(rules, reporter, progress)
 
