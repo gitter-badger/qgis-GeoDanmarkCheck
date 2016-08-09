@@ -174,7 +174,6 @@ class GeoDanmarkChecker:
         """Run method that performs all the real work"""
         # show the dialog
         self.dlg.show()
-        print('Test')
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed
