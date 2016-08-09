@@ -42,3 +42,6 @@ featuretypes.append(VANDLOEBSMIDTE_BRUDT)
 
 VEJMIDTE_BRUDT = FeatureType('VEJMIDTE_BRUDT', 'vejmidte_brudt', '')
 featuretypes.append(VEJMIDTE_BRUDT)
+
+JERNBANE_BRUDT = FeatureType('JERNBANE_BRUDT', 'jernbane_brudt', '')
+featuretypes.append(JERNBANE_BRUDT)
