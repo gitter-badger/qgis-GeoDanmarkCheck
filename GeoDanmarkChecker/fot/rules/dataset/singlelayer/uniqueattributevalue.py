@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from .singlelayerrule import SingleLayerRule
-from ....geomutils import shortestline
+from ....geomutils import shortestline, extractlinestrings
 
 class UniqueAttributeValue(SingleLayerRule):
     def __init__(self, name, feature_type, attributename, filter=None):
@@ -37,9 +37,17 @@ class UniqueAttributeValue(SingleLayerRule):
                 if value in self.attributevalues:
                     # Wooops not unique!
                     errorgeom = shortestline(feature, self.attributevalues[value])
+                    if errorgeom.length() < 0.001:
+                        # Lines with length 0 tends to crash spatialite
+                        errorgeom = errorgeom.centroid()
                     reporter.error(self.name, self.featuretype, self.attributename + "=" + unicode(value) + " not unique", errorgeom)
                 else:
                     self.attributevalues[value] = feature
-            except:
-                reporter.error(self.name, self.featuretype, "Error processing attribute: " + self.attributename, feature)
+            except Exception as e:
+                reporter.error(
+                    self.name,
+                    self.featuretype,
+                    "Error processing attribute: {0} Message: {1}".format(self.attributename, str(e)),
+                    feature
+                )
             progressreporter.completed_one()
