@@ -31,6 +31,8 @@ def togeometry(f):
         return f.geometry()
     elif isinstance(f, QgsAbstractGeometryV2):
         return QgsGeometry(f)
+    elif f is None:
+        return None
     else:
         raise TypeError("Type was not QgsGeometry or QgsFeature. Type was {0}".format(str(type(f))))
 

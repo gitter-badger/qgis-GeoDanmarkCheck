@@ -39,11 +39,11 @@ class Reporter(object):
         self.report(rulename, typeinfo, message, geometry, "warning")
 
     def report(self, rulename, typeinfo, message, geometry, level):
-        try:
-            geometry = togeometry(geometry)
-        except TypeError:
-            # TODO: handle this error aswell
-            print('Error in togeometry(geometry)')
+        if geometry:
+            try:
+                geometry = togeometry(geometry)
+            except TypeError:
+                geometry = None
 
         fields = [
             ('rulename', unicode(rulename).encode('utf-8')),
@@ -51,22 +51,25 @@ class Reporter(object):
             ('message', unicode(message).encode('utf-8')),
             ('level', unicode(level).encode('utf-8'))
         ]
+
         # QGis.flatType if we don't care about 25D and whatnot
-        if QGis.flatType(geometry.wkbType()) == QGis.WKBLineString:
+        if geometry is None:
+            print 'XXXXX text output xxxxx', message
+            self.db.add_feature_to_layer('text', fields, None)
+        elif QGis.flatType(geometry.wkbType()) == QGis.WKBLineString:
             self.db.add_feature_to_layer(
                 'linestring',
                 fields,
                 geometry
             )
-
-        if QGis.flatType((geometry.wkbType())) == QGis.WKBPoint:
+        elif QGis.flatType((geometry.wkbType())) == QGis.WKBPoint:
             self.db.add_feature_to_layer(
                 'point',
                 fields,
                 geometry
             )
 
-        if QGis.flatType((geometry.wkbType())) == QGis.WKBPolygon:
+        elif QGis.flatType((geometry.wkbType())) == QGis.WKBPolygon:
             self.db.add_feature_to_layer(
                 'polygon',
                 fields,
@@ -84,18 +87,24 @@ class Reporter(object):
         # Add layer for linestring
         self.db.add_layer(
             'linestring',
-            ogr.wkbLineString25D,
+            ogr.wkbLineString,
             fields
         )
         # Add layer for points
         self.db.add_layer(
             'point',
-            ogr.wkbPoint25D,
+            ogr.wkbPoint,
             fields
         )
         # Add layer for polygons
         self.db.add_layer(
             'polygon',
-            ogr.wkbPolygon25D,
+            ogr.wkbPolygon,
+            fields
+        )
+        # Add layer for plain text
+        self.db.add_layer(
+            'text',
+            ogr.wkbNone,
             fields
         )

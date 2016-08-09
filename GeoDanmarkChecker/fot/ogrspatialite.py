@@ -28,6 +28,7 @@ class OGRSPatialite(object):
         self.layers = {}
         self.driver = ogr.GetDriverByName("SQLite")
         self._create_data_source()
+        ogr.UseExceptions()
 
     def __str__(self):
         return '{}'.format(self.path)
@@ -67,12 +68,15 @@ class OGRSPatialite(object):
         for field in fields:
             feature.SetField(field[0], field[1])
 
-        feature.SetGeometry(
-            ogr.CreateGeometryFromWkb(geometry.asWkb())
-        )
-        if layer.CreateFeature(feature) != 0:
+        if geometry:
+            ogrgeom = ogr.CreateGeometryFromWkb(geometry.asWkb())
+            ogrgeom.FlattenTo2D()
+            feature.SetGeometry(ogrgeom)
+        err = layer.CreateFeature(feature)
+        if err != 0:
+            pass
             # TODO: Handle error on feature insertion (invalid geom?)
-            print('Error adding feature to layer: {}'.format(feature))
+            #print('Error adding feature to layer: {}'.format(feature))
 
         feature.Destroy()
 
