@@ -50,8 +50,11 @@ class AttributesMustNotBeChanged(CompareRule):
                 f2 = m.feature2
                 for attrib in self.unchangedattributes:
                     messages = []
-                    if not f1[attrib] == f2[attrib]:
-                        messages.append(u'Attribute {0} changed from {1} to {2}'.format(attrib, f1[attrib], f2[attrib]))
+                    try:
+                        if not f1[attrib] == f2[attrib]:
+                            messages.append(u'Attribute {0} changed from {1} to {2}'.format(attrib, f1[attrib], f2[attrib]))
+                    except KeyError as e:
+                        messages.append(u'Attribute {0} not found'.format(attrib))
                     if messages:
                         errorreporter.error(self.name, self.featuretype, ';'.join(messages), m.matchgeometry)
             progressreporter.completed_one()
