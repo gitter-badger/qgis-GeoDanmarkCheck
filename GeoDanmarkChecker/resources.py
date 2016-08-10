@@ -2,9 +2,6 @@
 
 # Resource object code
 #
-# Created: Wed Aug 3 12:37:07 2016
-#      by: The Resource Compiler for PyQt (Qt v4.8.6)
-#
 # WARNING! All changes made in this file will be lost!
 
 from PyQt4 import QtCore
