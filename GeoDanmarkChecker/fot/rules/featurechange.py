@@ -1,1 +1,0 @@
-# Compares two objects - usually some sort of before and after
