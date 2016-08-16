@@ -143,6 +143,17 @@ def extractlinestrings(f):
             return lines[0]
     return None
 
+def tocoordinates(feature):
+    g = togeometry(feature)
+    type = QGis.flatType((g.wkbType()))
+    if type == QGis.WKBPoint:
+        return g.asPoint()
+    if type == QGis.WKBLineString:
+        return g.asPolyline()
+    if type == QGis.WKBPolygon:
+        return g.asPolygon()
+    raise TypeError("Unknown geometry type: " + str(type))
+
 
 
 

@@ -24,6 +24,7 @@ from fot.rules.dataset.singlelayer import UniqueAttributeValue
 from fot.rules.dataset.singlelayer import AttributeRule
 from fot.rules.dualdataset.compareattributes import AttributesMustNotBeChanged
 from fot.rules.dualdataset.preliminaryobjects import PreliminaryObjectsRule
+from fot.rules.dualdataset.piperule import PipeRule
 from fot.repository import Repository
 from fot.consolereporter import ConsoleReporter
 from fot.progress import ProgressReporter
@@ -34,7 +35,7 @@ from fot.gmlimporter import gml_to_spatialite
 import os
 
 rules = []
-if True:
+if False:
 
     # Rules applying to ALL featuretypes
     for t in fot.featuretype.featuretypes:
@@ -83,41 +84,64 @@ if True:
         )
     )
 
-vejmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
-rules.append(
-    AttributesMustNotBeChanged(
-        'Unchanged road attribs',
-        feature_type=fot.featuretype.VEJMIDTE_BRUDT,
-        unchangedattributes=[
-                'kommunekode',
-                'vejkode',
-                'vejmyndighed',
-                'vejmidtetype',
-                'vejklasse_brudt',
-                'trafikart_brudt',
-                'overflade_brudt',
-                'plads_brudt',
-                'fiktiv_brudt',
-                'tilogfrakoer_brudt',
-                'rundkoersel_brudt',
-                #'niveau'
-        ],
-        featurematcher=ApproximateLineMatcher(**vejmatchoptions),
-        beforefilter='vejkode IS NOT NULL'
+    vejmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
+    rules.append(
+        AttributesMustNotBeChanged(
+            'Unchanged road attribs',
+            feature_type=fot.featuretype.VEJMIDTE_BRUDT,
+            unchangedattributes=[
+                    'kommunekode',
+                    'vejkode',
+                    'vejmyndighed',
+                    'vejmidtetype',
+                    'vejklasse_brudt',
+                    'trafikart_brudt',
+                    'overflade_brudt',
+                    'plads_brudt',
+                    'fiktiv_brudt',
+                    'tilogfrakoer_brudt',
+                    'rundkoersel_brudt',
+                    #'niveau'
+            ],
+            featurematcher=ApproximateLineMatcher(**vejmatchoptions),
+            beforefilter='vejkode IS NOT NULL'
+        )
     )
-)
 
-railmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
+    railmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
+    rules.append(
+        AttributesMustNotBeChanged(
+            'Unchanged rail attribs',
+            feature_type=fot.featuretype.JERNBANE_BRUDT,
+            unchangedattributes=[
+                    'ejer_jernbane',
+                    'sportype',
+            ],
+            featurematcher=ApproximateLineMatcher(**vejmatchoptions),
+            #beforefilter='vejkode IS NOT NULL'
+        )
+    )
+
+pipe_no_touch_attributes=['Ejer_vandloebsmidte',
+                                'Fra_dato_fot',
+                                'Geometri_status',
+                                'Hovedforloeb',
+                                'Midtbredde_brudt',
+                                'ModerFOTID',
+                                'ModerFOTversion',
+                                'Netvaerk',
+                                'Objekt_status',
+                                'Startknude_Vandloebsmidte',
+                                'Slutknude_vandloebsmidte',
+                                'Synlig_Vandloebsmidte',
+                                'Vandloebstype']
 rules.append(
-    AttributesMustNotBeChanged(
-        'Unchanged rail attribs',
-        feature_type=fot.featuretype.JERNBANE_BRUDT,
-        unchangedattributes=[
-                'ejer_jernbane',
-                'sportype',
-        ],
-        featurematcher=ApproximateLineMatcher(**vejmatchoptions),
-        #beforefilter='vejkode IS NOT NULL'
+    PipeRule(
+        'Pipes unchanged',
+        feature_type=fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+        ispipefunction=lambda feature: feature['Vandloebstype'] == u'Rørlagt',
+        isshortfunction=lambda geom: geom.length() < 50,
+        unchangedattributes=pipe_no_touch_attributes
     )
 )
 
