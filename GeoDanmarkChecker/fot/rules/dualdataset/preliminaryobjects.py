@@ -30,7 +30,7 @@ class PreliminaryObjectsRule(CompareRule):
         self.statusattribute = u'geometri_status'
         self.featuretype = feature_type
         self.beforefilter = self.statusattribute + u' = "Foreløbig"'
-        self.idcolumn = 'fot_id'
+        self.idcolumn = self.featuretype.id_attribute
 
     def execute(self, beforerepo, afterrepo, errorreporter, progressreporter):
         if not isinstance(beforerepo, Repository):

@@ -24,6 +24,7 @@ class FeatureType(object):
         self.name = name
         self.tablename = tablename
         self.displayname = displayname
+        self.id_attribute = 'FOT_ID'
 
     def __repr__(self):
         return self.name
