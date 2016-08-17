@@ -154,6 +154,19 @@ def tocoordinates(feature):
         return g.asPolygon()
     raise TypeError("Unknown geometry type: " + str(type))
 
+def toflatcoordinates(feature):
+    """Returns a flat list of all coordinates in the geometry"""
+    g = togeometry(feature)
+    type = QGis.flatType((g.wkbType()))
+    if type == QGis.WKBPoint:
+        return [g.asPoint()]
+    if type == QGis.WKBLineString:
+        return g.asPolyline()
+    if type == QGis.WKBPolygon:
+        return [coord for ring in g.asPolygon() for coord in ring]
+    raise TypeError("Unknown geometry type: " + str(type))
+
+
 
 
 
