@@ -28,23 +28,26 @@ from fot.rules.dualdataset.piperule import PipeRule
 from fot.repository import Repository
 from fot.consolereporter import ConsoleReporter
 from fot.progress import ProgressReporter
-from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher
+from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher, NearbyObjectsGeometryMatcher
 from fot.rules import RuleExecutor
 from fot.reporter import Reporter
 from fot.gmlimporter import gml_to_spatialite
 import os
 
 rules = []
-if False:
+if True:
 
     # Rules applying to ALL featuretypes
     for t in fot.featuretype.featuretypes:
         rules.append(
             PreliminaryObjectsRule(
-                t.name + ' preliminary objects',
-                feature_type=t
+                name=t.name + ' preliminary objects',
+                feature_type=t,
+                ispreliminaryfunction=lambda feature: feature['Geometri_status'] == u'Foreløbig',
+                nearbymatcher=NearbyObjectsGeometryMatcher(distancewithin=5.0)
             )
         )
+if True:
         # rules.append(
         #     UniqueAttributeValue(
         #         t.name + ' fot_id unique',
@@ -61,7 +64,6 @@ if False:
             fot.featuretype.VANDLOEBSMIDTE_BRUDT,
             attributename='vandloebstype',
             isvalidfunction=lambda val: val in [u'Almindelig', u'Gennem sø', u'Rørlagt']
-            # validvalues=[u'XXAlmindelig', u'Gennem sø', u'Rørlagt'] #[u'Almindelig', u'Gennem sø', u'Rørlagt']
         )
     )
 
@@ -122,28 +124,38 @@ if False:
         )
     )
 
-pipe_no_touch_attributes=['Ejer_vandloebsmidte',
-                                'Fra_dato_fot',
-                                'Geometri_status',
-                                'Hovedforloeb',
-                                'Midtbredde_brudt',
-                                'ModerFOTID',
-                                'ModerFOTversion',
-                                'Netvaerk',
-                                'Objekt_status',
-                                'Startknude_Vandloebsmidte',
-                                'Slutknude_vandloebsmidte',
-                                'Synlig_Vandloebsmidte',
-                                'Vandloebstype']
-rules.append(
-    PipeRule(
-        'Pipes unchanged',
-        feature_type=fot.featuretype.VANDLOEBSMIDTE_BRUDT,
-        ispipefunction=lambda feature: feature['Vandloebstype'] == u'Rørlagt',
-        isshortfunction=lambda geom: geom.length() < 50,
-        unchangedattributes=pipe_no_touch_attributes
+    pipe_no_touch_attributes=['Ejer_vandloebsmidte',
+                                    'Fra_dato_fot',
+                                    'Geometri_status',
+                                    'Hovedforloeb',
+                                    'Midtbredde_brudt',
+                                    'ModerFOTID',
+                                    'ModerFOTversion',
+                                    'Netvaerk',
+                                    'Objekt_status',
+                                    'Startknude_Vandloebsmidte',
+                                    'Slutknude_vandloebsmidte',
+                                    'Synlig_Vandloebsmidte',
+                                    'Vandloebstype']
+    rules.append(
+        PipeRule(
+            'Pipes unchanged',
+            feature_type=fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+            ispipefunction=lambda feature: feature['Vandloebstype'] == u'Rørlagt',
+            isshortfunction=lambda geom: geom.length() < 50,
+            unchangedattributes=pipe_no_touch_attributes
+        )
     )
-)
+
+# To test vandløb
+rules.append(
+            PreliminaryObjectsRule(
+                name='Vandloebsmidte preliminary objects',
+                feature_type=fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+                ispreliminaryfunction=lambda feature: feature['Geometri_status'] == u'Foreløbig',
+                nearbymatcher=NearbyObjectsGeometryMatcher(distancewithin=5.0)
+            )
+        )
 
 with fot.qgisapp.QgisStandaloneApp(True) as app:
     print "App initialised"
@@ -168,10 +180,3 @@ with fot.qgisapp.QgisStandaloneApp(True) as app:
     after = Repository(os.path.join(testdata_dir, 'producentfil_med_fejl.gml'))
     exe = RuleExecutor(before, after)
     exe.execute(rules, reporter, progress)
-
-    # from fot.geomutils import FeatureIndex
-    # feats = after.read(fot.featuretype.BYGNING)
-    # ix = FeatureIndex(feats, usespatialindex=True)
-    # result = ix.geometryintersects( feats[0] )
-    # print result
-

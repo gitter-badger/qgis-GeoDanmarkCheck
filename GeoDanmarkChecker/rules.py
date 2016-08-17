@@ -42,7 +42,8 @@ from fot.rules.dataset.singlelayer import UniqueAttributeValue
 from fot.rules.dataset.singlelayer import AttributeRule
 from fot.rules.dualdataset.compareattributes import AttributesMustNotBeChanged
 from fot.rules.dualdataset.preliminaryobjects import PreliminaryObjectsRule
-from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher
+from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher, NearbyObjectsGeometryMatcher
+from fot.rules.dualdataset.piperule import PipeRule
 
 
 rules_set = RulesSet('GeoDanmark Rules')
@@ -54,21 +55,12 @@ for t in fot.featuretype.featuretypes:
     rules_set.add_rule(
         'Preliminary',
         PreliminaryObjectsRule(
-            t.name + ' preliminary objects',
-            feature_type=t
+            name=t.name + ' preliminary objects',
+            feature_type=t,
+            ispreliminaryfunction=lambda feature: feature['Geometri_status'] == u'Foreløbig',
+            nearbymatcher=NearbyObjectsGeometryMatcher(distancewithin=5.0)
         )
     )
-
-rules_set.add_rule_category('Vandloebstype')
-rules_set.add_rule(
-    'Vandloebstype',
-    AttributeRule(
-        'Stream.vandloebstype',
-        fot.featuretype.VANDLOEBSMIDTE_BRUDT,
-        attributename='vandloebstype',
-        isvalidfunction=lambda val: val in [u'Almindelig', u'Gennem sø', u'Rørlagt']
-    )
-)
 
 rules_set.add_rule_category('Building UUID')
 rules_set.add_rule(
@@ -77,12 +69,24 @@ rules_set.add_rule(
         'Unchanged building UUID',
         feature_type=fot.featuretype.BYGNING,
         unchangedattributes=['bygning_id'],
-        featurematcher=ApproximatePolygonMatcher(relativeareadeviation=0.5),
+        featurematcher=ApproximatePolygonMatcher(relativeareadeviation=0.5), # TODO: Consider hausdorffdistance here!
         beforefilter='bygning_id IS NOT NULL'
     )
 )
 
+rules_set.add_rule(
+    'Building UUID',
+    UniqueAttributeValue(
+        'Building UUID unique',
+        feature_type=fot.featuretype.BYGNING,
+        attributename='bygning_id',
+        filter='bygning_id IS NOT NULL'
+    )
+)
+
 rules_set.add_rule_category('Unchanged network attribs')
+
+# TODO: use segmentwise matching here instead of approximatelinematcher which tries to match entire geometry
 vejmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
 rules_set.add_rule(
     'Unchanged network attribs',
@@ -119,5 +123,40 @@ rules_set.add_rule(
                 'sportype',
         ],
         featurematcher=ApproximateLineMatcher(**vejmatchoptions),
+    )
+)
+
+rules_set.add_rule_category('Stream centrelines')
+pipe_no_touch_attributes=['Ejer_vandloebsmidte',
+                                    'Fra_dato_fot',
+                                    'Geometri_status',
+                                    'Hovedforloeb',
+                                    'Midtbredde_brudt',
+                                    'ModerFOTID',
+                                    'ModerFOTversion',
+                                    'Netvaerk',
+                                    'Objekt_status',
+                                    'Startknude_Vandloebsmidte',
+                                    'Slutknude_vandloebsmidte',
+                                    'Synlig_Vandloebsmidte',
+                                    'Vandloebstype']
+rules_set.add_rule(
+    'Stream centrelines',
+    PipeRule(
+        'Pipes unchanged',
+        feature_type=fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+        ispipefunction=lambda feature: feature['Vandloebstype'] == u'Rørlagt',
+        isshortfunction=lambda geom: geom.length() < 50,
+        unchangedattributes=pipe_no_touch_attributes
+    )
+)
+
+rules_set.add_rule(
+    'Stream centrelines',
+    AttributeRule(
+        'Stream.vandloebstype',
+        fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+        attributename='vandloebstype',
+        isvalidfunction=lambda val: val in [u'Almindelig', u'Gennem sø', u'Rørlagt']
     )
 )
