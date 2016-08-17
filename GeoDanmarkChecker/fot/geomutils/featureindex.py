@@ -51,7 +51,7 @@ class FeatureIndex():
         if not all(isinstance(f, QgsFeature) for f in features):
             raise TypeError("All features must be of type QgsFeature")
 
-        self.features += [f for f in features]
+        self.features = list(features)
         self._updatespatialindex(features)
         self._updateattributeindexes(features)
 
