@@ -38,12 +38,12 @@ class RulesSet(object):
 
 # TODO: We delete all this, it's just for temporary tests.
 import fot.featuretype
-from fot.rules.dataset.singlelayer import UniqueAttributeValue
-from fot.rules.dataset.singlelayer import AttributeRule
-from fot.rules.dualdataset.compareattributes import AttributesMustNotBeChanged
-from fot.rules.dualdataset.preliminaryobjects import PreliminaryObjectsRule
+from fot.rules.validate.singlelayer import UniqueAttributeValue
+from fot.rules.validate.singlelayer import AttributeRule
+from fot.rules.compare.compareattributes import AttributesMustNotBeChanged
+from fot.rules.compare.preliminaryobjects import PreliminaryObjectsRule
 from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher, NearbyObjectsGeometryMatcher
-from fot.rules.dualdataset.piperule import PipeRule
+from fot.rules.compare.piperule import PipeRule
 
 
 rules_set = RulesSet('GeoDanmark Rules')

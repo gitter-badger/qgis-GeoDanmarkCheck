@@ -20,8 +20,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from . import Rule
 from .. import Repository
-from .dualdataset.comparerule import CompareRule
-from .dataset.datasetrule import DatasetRule
+from .compare.comparerule import CompareRule
+from .validate.datasetrule import DatasetRule
 
 class RuleExecutor:
 

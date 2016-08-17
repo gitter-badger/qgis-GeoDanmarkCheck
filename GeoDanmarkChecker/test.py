@@ -20,11 +20,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import fot.featuretype
 import fot.qgisapp
-from fot.rules.dataset.singlelayer import UniqueAttributeValue
-from fot.rules.dataset.singlelayer import AttributeRule
-from fot.rules.dualdataset.compareattributes import AttributesMustNotBeChanged
-from fot.rules.dualdataset.preliminaryobjects import PreliminaryObjectsRule
-from fot.rules.dualdataset.piperule import PipeRule
+from fot.rules.validate.singlelayer import UniqueAttributeValue
+from fot.rules.validate.singlelayer import AttributeRule
+from fot.rules.compare.compareattributes import AttributesMustNotBeChanged
+from fot.rules.compare.preliminaryobjects import PreliminaryObjectsRule
+from fot.rules.compare.piperule import PipeRule
 from fot.repository import Repository
 from fot.consolereporter import ConsoleReporter
 from fot.progress import ProgressReporter
