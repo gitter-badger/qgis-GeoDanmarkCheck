@@ -57,11 +57,15 @@ class Reporter(object):
             print 'XXXXX text output xxxxx', message
             self.db.add_feature_to_layer('text', fields, None)
         elif QGis.flatType(geometry.wkbType()) == QGis.WKBLineString:
-            self.db.add_feature_to_layer(
-                'linestring',
-                fields,
-                geometry
-            )
+            if geometry.length() < 0.001:
+                # Lines with length 0 tends to crash spatialite. Report as point instead
+                self.report(rulename, typeinfo, message, geometry.centroid(), level)
+            else:
+                self.db.add_feature_to_layer(
+                    'linestring',
+                    fields,
+                    geometry
+                )
         elif QGis.flatType((geometry.wkbType())) == QGis.WKBPoint:
             self.db.add_feature_to_layer(
                 'point',
