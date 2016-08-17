@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+import datetime
 from PyQt4.QtCore import (
     QSettings,
     QTranslator,
@@ -170,6 +171,7 @@ class GeoDanmarkChecker:
             if not QgsMapLayerRegistry.instance().addMapLayer(layer):
                 print('Unable to add layer: {}'.format(table))
 
+
     def run(self):
         """Run method that performs all the real work"""
         # show the dialog
@@ -185,8 +187,11 @@ class GeoDanmarkChecker:
                 pass
 
             output_file = os.path.join(
-                os.path.dirname(before_file),
-                'geodk_check_output.sqlite'
+                os.path.dirname(after_file),
+                'check_{0}_{1}.sqlite'.format(
+                    os.path.splitext(os.path.basename(after_file))[0], # Filename without extension
+                    datetime.datetime.now().strftime("%Y%m%d_%H%M")
+                )
             )
             reporter = Reporter(output_file)
             progress = ProgressDialog(self.iface.messageBar())
