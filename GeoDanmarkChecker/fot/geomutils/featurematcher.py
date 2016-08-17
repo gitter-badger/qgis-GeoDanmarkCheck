@@ -18,7 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from . import FeatureIndex, togeometry, geometryequal, extractlinestrings, shortestline
+from . import FeatureIndex, togeometry, geometryequal, extractlinestrings, shortestline, discretehausdorffdistance
 from qgis.core import QgsGeometry
 
 # Classes which finds matching features in another collection of features
@@ -34,11 +34,12 @@ class PreparedFeature(object):
 
 
 class FeatureMatch(object):
-    def __init__(self, f1, f2, matchgeom = None, exactmatch = False):
+    def __init__(self, f1, f2, matchgeom = None, exactmatch = False, matchscore = None):
         self.exactmatch = exactmatch
         self.feature1 = f1
         self.feature2 = f2
         self.matchgeometry = matchgeom
+        self.matchscore = matchscore # Can be used for ordering matches. Low score means good match
 
 
 class MatchFinder(object):
@@ -53,11 +54,13 @@ class MatchFinder(object):
         if matcher.bboxexpansion > 0:
             bbox.buffer(matcher.bboxexpansion)
         nearbyfeatures = self.indexedfeatures.geometryintersects(bbox)
+        matches = []
         for otherfeat in nearbyfeatures:
             m = matcher.match(prep, otherfeat)
             if m:
-                yield m
-
+                matches.append(m)
+        matches.sort(key=lambda match: match.matchscore)
+        return matches
 
 class ExactGeometryMatcher(object):
 
@@ -71,13 +74,36 @@ class ExactGeometryMatcher(object):
     def matchesexactly(self, preparedfeature, otherfeature):
         othergeom = togeometry(otherfeature)
         if geometryequal(preparedfeature.geom, othergeom, self.coordinatetolerance):
-            return FeatureMatch(preparedfeature.feature, otherfeature, othergeom, exactmatch=True)
+            return FeatureMatch(preparedfeature.feature, otherfeature, othergeom, exactmatch=True, matchscore=0.0)
         return None
 
 
+class HausdorffGeometryMatcher(ExactGeometryMatcher):
+    def __init__(self, maxhausdorffdistance, **kwargs):
+        super(NearbyObjectsGeometryMatcher, self).__init__(**kwargs)
+        self.maxhausdorffdistance = float(maxhausdorffdistance)
+        self.bboxexpansion = maxhausdorffdistance
+
+    def match(self, preparedfeature, otherfeature):
+        # If exact match - return that
+        m = self.matchesexactly(preparedfeature, otherfeature)
+        if m:
+            return m
+        g1 = preparedfeature.geom
+        dist, p1, p2 = discretehausdorffdistance(g1, otherfeature)
+        if dist < self.maxhausdorffdistance:
+            matchgeom = QgsGeometry.fromPoint(p1) if dist == 0 else QgsGeometry.fromPolyline([p1,p2])
+            return FeatureMatch(
+                preparedfeature.feature,
+                otherfeature,
+                matchgeom=matchgeom,
+                exactmatch=False,
+                matchscore=dist)
+
 class NearbyObjectsGeometryMatcher(ExactGeometryMatcher):
-    def __init__(self, **kwargs):
-        self.distancewithin = 5.0
+    def __init__(self, distancewithin, **kwargs):
+        super(NearbyObjectsGeometryMatcher, self).__init__(**kwargs)
+        self.distancewithin = float(distancewithin)
         self.bboxexpansion = self.distancewithin
 
     def match(self, preparedfeature, otherfeature):
@@ -86,8 +112,9 @@ class NearbyObjectsGeometryMatcher(ExactGeometryMatcher):
         if m:
             return m
         line = shortestline(preparedfeature.geom, otherfeature)
-        if line.length() < self.distancewithin:
-            return FeatureMatch(preparedfeature.feature, otherfeature, line)
+        length = line.length()
+        if length < self.distancewithin:
+            return FeatureMatch(preparedfeature.feature, otherfeature, line, matchscore=length)
 
 
 class ApproximatePolygonMatcher(ExactGeometryMatcher):
@@ -114,7 +141,8 @@ class ApproximatePolygonMatcher(ExactGeometryMatcher):
             diff1 = intersectionarea / area1
             diff2 = intersectionarea / area2
             if diff1 > self.relativeareadeviation or diff2 > self.relativeareadeviation:
-                return FeatureMatch(preparedfeature.feature, otherfeature, intersection)
+                score = 1.0 - min(diff1, diff2) # Lower score means better match. Lets us compare against the worst of the two
+                return FeatureMatch(preparedfeature.feature, otherfeature, intersection, matchscore=score)
         return None
 
 
@@ -157,23 +185,19 @@ class ApproximateLineMatcher(ExactGeometryMatcher):
 
             if isectlength:
                 line = extractlinestrings(intersection)
-                # If we actually have an intersection - not just points
+                l1 = preparedfeature.geom.length()
+                l2 = othergeom.length()
+                diff1 = isectlength / l1
+                diff2 = isectlength / l2
+                # Lower score means better match. Lets us compare against the worst of the two
+                score = 1.0 - min(diff1, diff2)
                 if self.relativelengthdeviation is None and isectlength > self.minimumintersectionlength:
-                    return FeatureMatch(preparedfeature.feature, otherfeature, line)
-                else:
-                    l1 = preparedfeature.geom.length()
-                    l2 = othergeom.length()
-                    diff1 = isectlength / l1
-                    diff2 = isectlength / l2
-                    if diff1 > self.relativelengthdeviation \
-                            or diff2 > self.relativelengthdeviation \
-                            or isectlength > self.minimumintersectionlength:
-                        return FeatureMatch(preparedfeature.feature, otherfeature, line)
+                    return FeatureMatch(preparedfeature.feature, otherfeature, line, exactmatch=False, matchscore=score)
+                if diff1 > self.relativelengthdeviation \
+                        or diff2 > self.relativelengthdeviation \
+                        or isectlength > self.minimumintersectionlength:
+                    return FeatureMatch(preparedfeature.feature, otherfeature, line, exactmatch=False, matchscore=score)
         return None
-
-
-class ApproximatePointMatcher(ExactGeometryMatcher):
-    pass
 
 
 
