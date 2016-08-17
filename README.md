@@ -3,7 +3,7 @@ Plugin for validating GeoDanmark data
 
 ## Installation
 - Hent kildekoden fra dette repositiory 
-  - Klik "Clone or Download" og derefter "Download zip"
+  - Klik "Clone or Download" og derefter "Download zip" øverst til højre på [forsiden](https://github.com/Septima/qgis-GeoDanmarkCheck)
   - Pak zip-filen ud
 - Kopier biblioteket `GeoDanmarkChecker` til QGIS´ plugin folder (se herunder)
 - Aktivér pluginet i QGIS
