@@ -165,8 +165,10 @@ class GeoDanmarkChecker:
             # Set encoding on the layer
             layer.setProviderEncoding(u'UTF-8')
             layer.dataProvider().setEncoding(u'UTF-8')
-            # TODO: uncomment below once we have the style available
-            # layer.loadNamedStyle('default_style.gml')
+            # Add style from file
+            style_file = os.path.join(self.plugin_dir, 'styles', 'output_{0}.qml'.format(table))
+            if os.path.isfile(style_file):
+                layer.loadNamedStyle(style_file)
             # Add layer to qgis
             if not QgsMapLayerRegistry.instance().addMapLayer(layer):
                 print('Unable to add layer: {}'.format(table))
