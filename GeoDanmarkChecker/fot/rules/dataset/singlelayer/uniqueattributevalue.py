@@ -37,9 +37,6 @@ class UniqueAttributeValue(SingleLayerRule):
                 if value in self.attributevalues:
                     # Wooops not unique!
                     errorgeom = shortestline(feature, self.attributevalues[value])
-                    if errorgeom.length() < 0.001:
-                        # Lines with length 0 tends to crash spatialite
-                        errorgeom = errorgeom.centroid()
                     reporter.error(self.name, self.featuretype, self.attributename + "=" + unicode(value) + " not unique", errorgeom)
                 else:
                     self.attributevalues[value] = feature
