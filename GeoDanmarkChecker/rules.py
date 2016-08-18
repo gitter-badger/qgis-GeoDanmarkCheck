@@ -49,8 +49,6 @@ from fot.rules.compare.piperule import PipeRule
 rules_set = RulesSet('GeoDanmark Rules')
 
 rules_set.add_rule_category('Preliminary')
-rules_set.add_rule_category('Unique Attribute Value')
-
 for t in fot.featuretype.featuretypes:
     rules_set.add_rule(
         'Preliminary',
