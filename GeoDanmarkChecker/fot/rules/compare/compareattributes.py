@@ -21,7 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from .comparerule import CompareRule
 from ... import Repository
 from ... import FeatureType
-from ...geomutils.featurematcher import MatchFinder
+from ...geomutils.featurematcher import MatchFinder, ExactGeometryMatcher
 from ...geomutils.segmentmatcher import SegmentMatchFinder
 
 
@@ -81,18 +81,48 @@ class SegmentAttributesMustNotBeChanged(CompareRule):
         beforefeats = beforerepo.read(self.featuretype, attributes=self.unchangedattributes, feature_filter=self.beforefilter)
         afterfeats = afterrepo.read(self.featuretype, attributes=self.unchangedattributes, feature_filter=self.afterfilter)
 
+        # Features that appear to be changed
+        changed_before_features = list(beforefeats)
+        changed_after_features = []
+
         progressreporter.begintask(self.name, len(afterfeats))
-        segmentmatchfinder = SegmentMatchFinder(beforefeats, segmentize=self.segmentize)
+
+        # Find exact geometry matches
+        finder = MatchFinder(beforefeats)
+        exactMatcher = ExactGeometryMatcher()
         for f in afterfeats:
+            matches = finder.findmatching(f, exactMatcher)
+            match_found = False
+            for match in matches:
+                match_found = True
+                self._check(errorreporter, match.feature2, f, f)
+                # Remove from changed if exists (Duplicate geometries forces us to use this check)
+                if match.feature2 in changed_before_features:
+                    changed_before_features.remove(match.feature2)
+            if not match_found:
+                changed_after_features.append(f)
+            progressreporter.completed_one()
+
+        # Compare nonexact geometry matches
+        progressreporter.begintask(self.name, len(changed_after_features))
+        segmentmatchfinder = SegmentMatchFinder(changed_before_features, segmentize=self.segmentize)
+        for f in changed_after_features:
             for sm in segmentmatchfinder.findmatching(f, maxdistance=self.maxdist):
                 f2 = sm.nearestfeature
-                messages = []
-                for attrib in self.unchangedattributes:
-                    try:
-                        if not f[attrib] == f2[attrib]:
-                            messages.append(u'Attribute {0} changed from {1} to {2}'.format(attrib, f[attrib], f2[attrib]))
-                    except KeyError as e:
-                        messages.append(u'Attribute {0} not found'.format(attrib))
-                if messages:
-                    errorreporter.error(self.name, self.featuretype, ';'.join(messages), sm.togeometry())
+                self._check(errorreporter, f2, f, sm.togeometry())
             progressreporter.completed_one()
+
+
+    def _check(self, errorreporter, fbefore, fafter, geom):
+        messages = []
+        for attrib in self.unchangedattributes:
+            try:
+                if not fbefore[attrib] == fafter[attrib]:
+                    messages.append(u'{0}: {1} -> {2}'.format(attrib, fbefore[attrib], fafter[attrib]))
+            except KeyError as e:
+                messages.append(u'{0} not found'.format(attrib))
+        if messages:
+            message = "Attribute error: " + '; '.join(messages)
+            errorreporter.error(self.name, self.featuretype, message, geom)
+
+
