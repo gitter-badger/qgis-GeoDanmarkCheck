@@ -22,6 +22,7 @@ from .comparerule import CompareRule
 from ... import Repository
 from ... import FeatureType
 from ...geomutils.featurematcher import MatchFinder
+from ...geomutils.segmentmatcher import SegmentMatchFinder
 
 
 class AttributesMustNotBeChanged(CompareRule):
@@ -48,13 +49,50 @@ class AttributesMustNotBeChanged(CompareRule):
             for m in matchfinder.findmatching(f, self.matcher):
                 f1 = m.feature1
                 f2 = m.feature2
+                messages = []
                 for attrib in self.unchangedattributes:
-                    messages = []
                     try:
                         if not f1[attrib] == f2[attrib]:
                             messages.append(u'Attribute {0} changed from {1} to {2}'.format(attrib, f1[attrib], f2[attrib]))
                     except KeyError as e:
                         messages.append(u'Attribute {0} not found'.format(attrib))
-                    if messages:
-                        errorreporter.error(self.name, self.featuretype, ';'.join(messages), m.matchgeometry)
+                if messages:
+                    errorreporter.error(self.name, self.featuretype, ';'.join(messages), m.matchgeometry)
+            progressreporter.completed_one()
+
+
+class SegmentAttributesMustNotBeChanged(CompareRule):
+    """Matches segment by segment. Possibly on a densified geometry. Disregards anything further away than maxdist"""
+    def __init__(self, name, feature_type, unchangedattributes, maxdist, segmentize = None, beforefilter=None, afterfilter=None):
+        super(SegmentAttributesMustNotBeChanged, self).__init__(name, beforefilter, afterfilter)
+        if not isinstance(feature_type, FeatureType):
+            raise TypeError()
+        self.featuretype = feature_type
+        self.unchangedattributes = unchangedattributes
+        self.maxdist = float(maxdist)
+        self.segmentize = float(segmentize) if segmentize else 0
+
+    def execute(self, beforerepo, afterrepo, errorreporter, progressreporter):
+        if not isinstance(beforerepo, Repository):
+            raise TypeError()
+        if not isinstance(afterrepo, Repository):
+            raise TypeError()
+
+        beforefeats = beforerepo.read(self.featuretype, attributes=self.unchangedattributes, feature_filter=self.beforefilter)
+        afterfeats = afterrepo.read(self.featuretype, attributes=self.unchangedattributes, feature_filter=self.afterfilter)
+
+        progressreporter.begintask(self.name, len(afterfeats))
+        segmentmatchfinder = SegmentMatchFinder(beforefeats, segmentize=self.segmentize)
+        for f in afterfeats:
+            for sm in segmentmatchfinder.findmatching(f, maxdistance=self.maxdist):
+                f2 = sm.nearestfeature
+                messages = []
+                for attrib in self.unchangedattributes:
+                    try:
+                        if not f[attrib] == f2[attrib]:
+                            messages.append(u'Attribute {0} changed from {1} to {2}'.format(attrib, f[attrib], f2[attrib]))
+                    except KeyError as e:
+                        messages.append(u'Attribute {0} not found'.format(attrib))
+                if messages:
+                    errorreporter.error(self.name, self.featuretype, ';'.join(messages), sm.togeometry())
             progressreporter.completed_one()
