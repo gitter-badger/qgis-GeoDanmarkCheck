@@ -77,7 +77,6 @@ class ExactGeometryMatcher(object):
             return FeatureMatch(preparedfeature.feature, otherfeature, othergeom, exactmatch=True, matchscore=0.0)
         return None
 
-
 class HausdorffGeometryMatcher(ExactGeometryMatcher):
     def __init__(self, maxhausdorffdistance, **kwargs):
         super(NearbyObjectsGeometryMatcher, self).__init__(**kwargs)
@@ -122,9 +121,9 @@ class ApproximatePolygonMatcher(ExactGeometryMatcher):
     def __init__(self, **kwargs):
         super(ApproximatePolygonMatcher, self).__init__(**kwargs)
         self.useareaintersection = False
-        if 'relativeareadeviation' in kwargs:
-            self.relativeareadeviation = float( kwargs['relativeareadeviation'] )
-            self.useareaintersection = bool(self.relativeareadeviation)
+        if 'relativeintersectionarea' in kwargs:
+            self.relativeintersectionarea = float(kwargs['relativeintersectionarea'])
+            self.useareaintersection = bool(self.relativeintersectionarea)
 
     def match(self, preparedfeature, otherfeature):
         # If exact match - return that
@@ -140,7 +139,7 @@ class ApproximatePolygonMatcher(ExactGeometryMatcher):
             intersectionarea = intersection.area()
             diff1 = intersectionarea / area1
             diff2 = intersectionarea / area2
-            if diff1 > self.relativeareadeviation or diff2 > self.relativeareadeviation:
+            if diff1 > self.relativeintersectionarea and diff2 > self.relativeintersectionarea:
                 score = 1.0 - min(diff1, diff2) # Lower score means better match. Lets us compare against the worst of the two
                 return FeatureMatch(preparedfeature.feature, otherfeature, intersection, matchscore=score)
         return None
@@ -194,8 +193,8 @@ class ApproximateLineMatcher(ExactGeometryMatcher):
                 if self.relativelengthdeviation is None and isectlength > self.minimumintersectionlength:
                     return FeatureMatch(preparedfeature.feature, otherfeature, line, exactmatch=False, matchscore=score)
                 if diff1 > self.relativelengthdeviation \
-                        or diff2 > self.relativelengthdeviation \
-                        or isectlength > self.minimumintersectionlength:
+                        and diff2 > self.relativelengthdeviation \
+                        and isectlength > self.minimumintersectionlength:
                     return FeatureMatch(preparedfeature.feature, otherfeature, line, exactmatch=False, matchscore=score)
         return None
 
