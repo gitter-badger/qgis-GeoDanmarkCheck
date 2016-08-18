@@ -150,10 +150,10 @@ class ApproximateLineMatcher(ExactGeometryMatcher):
     def __init__(self, **kwargs):
         super(ApproximateLineMatcher, self).__init__(**kwargs)
         self.uselineintersection = True
-        self.relativelengthdeviation = None
+        self.relativeintersectionlength = None
         self.minimumintersectionlength = 0
-        if 'relativelengthdeviation' in kwargs:
-            self.relativelengthdeviation = float( kwargs['relativelengthdeviation'] )
+        if 'relativeintersectionlength' in kwargs:
+            self.relativeintersectionlength = float(kwargs['relativeintersectionlength'])
             self.uselineintersection = True
 
         if 'minimumintersectionlength' in kwargs:
@@ -190,10 +190,10 @@ class ApproximateLineMatcher(ExactGeometryMatcher):
                 diff2 = isectlength / l2
                 # Lower score means better match. Lets us compare against the worst of the two
                 score = 1.0 - min(diff1, diff2)
-                if self.relativelengthdeviation is None and isectlength > self.minimumintersectionlength:
+                if self.relativeintersectionlength is None and isectlength > self.minimumintersectionlength:
                     return FeatureMatch(preparedfeature.feature, otherfeature, line, exactmatch=False, matchscore=score)
-                if diff1 > self.relativelengthdeviation \
-                        and diff2 > self.relativelengthdeviation \
+                if diff1 > self.relativeintersectionlength \
+                        and diff2 > self.relativeintersectionlength \
                         and isectlength > self.minimumintersectionlength:
                     return FeatureMatch(preparedfeature.feature, otherfeature, line, exactmatch=False, matchscore=score)
         return None
