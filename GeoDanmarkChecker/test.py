@@ -35,8 +35,7 @@ from fot.gmlimporter import gml_to_spatialite
 import os
 
 rules = []
-if True:
-
+if False:
     # Rules applying to ALL featuretypes
     for t in fot.featuretype.featuretypes:
         rules.append(
@@ -47,7 +46,6 @@ if True:
                 nearbymatcher=NearbyObjectsGeometryMatcher(distancewithin=5.0)
             )
         )
-if True:
         # rules.append(
         #     UniqueAttributeValue(
         #         t.name + ' fot_id unique',
@@ -86,7 +84,7 @@ if True:
         )
     )
 
-    vejmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
+    vejmatchoptions = {'minimumintersectionlength': 3, 'relativeintersectionlength':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
     rules.append(
         AttributesMustNotBeChanged(
             'Unchanged road attribs',
@@ -110,7 +108,7 @@ if True:
         )
     )
 
-    railmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
+    railmatchoptions = {'minimumintersectionlength': 3, 'relativeintersectionlength':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
     rules.append(
         AttributesMustNotBeChanged(
             'Unchanged rail attribs',
@@ -147,15 +145,21 @@ if True:
         )
     )
 
-# To test vandløb
-rules.append(
-            PreliminaryObjectsRule(
-                name='Vandloebsmidte preliminary objects',
-                feature_type=fot.featuretype.VANDLOEBSMIDTE_BRUDT,
-                ispreliminaryfunction=lambda feature: feature['Geometri_status'] == u'Foreløbig',
-                nearbymatcher=NearbyObjectsGeometryMatcher(distancewithin=5.0)
+    # To test vandløb
+    rules.append(
+                PreliminaryObjectsRule(
+                    name='Vandloebsmidte preliminary objects',
+                    feature_type=fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+                    ispreliminaryfunction=lambda feature: feature['Geometri_status'] == u'Foreløbig',
+                    nearbymatcher=NearbyObjectsGeometryMatcher(distancewithin=5.0)
+                )
             )
-        )
+else:
+    # Get rules from rules.py
+    from rules import rules_set
+    for cat, lst in rules_set.rules.iteritems():
+        if cat == 'Building UUID':
+            rules += lst
 
 with fot.qgisapp.QgisStandaloneApp(True) as app:
     print "App initialised"
