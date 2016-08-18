@@ -22,7 +22,7 @@ import fot.featuretype
 import fot.qgisapp
 from fot.rules.validate.singlelayer import UniqueAttributeValue
 from fot.rules.validate.singlelayer import AttributeRule
-from fot.rules.compare.compareattributes import AttributesMustNotBeChanged
+from fot.rules.compare.compareattributes import AttributesMustNotBeChanged, SegmentAttributesMustNotBeChanged
 from fot.rules.compare.preliminaryobjects import PreliminaryObjectsRule
 from fot.rules.compare.piperule import PipeRule
 from fot.repository import Repository
@@ -35,7 +35,7 @@ from fot.gmlimporter import gml_to_spatialite
 import os
 
 rules = []
-if True:
+if False:
 
     # Rules applying to ALL featuretypes
     for t in fot.featuretype.featuretypes:
@@ -47,7 +47,7 @@ if True:
                 nearbymatcher=NearbyObjectsGeometryMatcher(distancewithin=5.0)
             )
         )
-if True:
+if False:
         # rules.append(
         #     UniqueAttributeValue(
         #         t.name + ' fot_id unique',
@@ -85,46 +85,7 @@ if True:
             beforefilter='bygning_id IS NOT NULL'
         )
     )
-
-    vejmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
-    rules.append(
-        AttributesMustNotBeChanged(
-            'Unchanged road attribs',
-            feature_type=fot.featuretype.VEJMIDTE_BRUDT,
-            unchangedattributes=[
-                    'kommunekode',
-                    'vejkode',
-                    'vejmyndighed',
-                    'vejmidtetype',
-                    'vejklasse_brudt',
-                    'trafikart_brudt',
-                    'overflade_brudt',
-                    'plads_brudt',
-                    'fiktiv_brudt',
-                    'tilogfrakoer_brudt',
-                    'rundkoersel_brudt',
-                    #'niveau'
-            ],
-            featurematcher=ApproximateLineMatcher(**vejmatchoptions),
-            beforefilter='vejkode IS NOT NULL'
-        )
-    )
-
-    railmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
-    rules.append(
-        AttributesMustNotBeChanged(
-            'Unchanged rail attribs',
-            feature_type=fot.featuretype.JERNBANE_BRUDT,
-            unchangedattributes=[
-                    'ejer_jernbane',
-                    'sportype',
-            ],
-            featurematcher=ApproximateLineMatcher(**vejmatchoptions),
-            #beforefilter='vejkode IS NOT NULL'
-        )
-    )
-
-    pipe_no_touch_attributes=['Ejer_vandloebsmidte',
+    pipe_no_touch_attributes = ['Ejer_vandloebsmidte',
                                     'Fra_dato_fot',
                                     'Geometri_status',
                                     'Hovedforloeb',
@@ -146,16 +107,52 @@ if True:
             unchangedattributes=pipe_no_touch_attributes
         )
     )
-
-# To test vandløb
-rules.append(
-            PreliminaryObjectsRule(
-                name='Vandloebsmidte preliminary objects',
-                feature_type=fot.featuretype.VANDLOEBSMIDTE_BRUDT,
-                ispreliminaryfunction=lambda feature: feature['Geometri_status'] == u'Foreløbig',
-                nearbymatcher=NearbyObjectsGeometryMatcher(distancewithin=5.0)
-            )
+    rules.append(
+        PreliminaryObjectsRule(
+            name='Vandloebsmidte preliminary objects',
+            feature_type=fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+            ispreliminaryfunction=lambda feature: feature['Geometri_status'] == u'Foreløbig',
+            nearbymatcher=NearbyObjectsGeometryMatcher(distancewithin=5.0)
         )
+    )
+
+rules.append(
+    SegmentAttributesMustNotBeChanged(
+        'Unchanged road attribs',
+        feature_type=fot.featuretype.VEJMIDTE_BRUDT,
+        unchangedattributes=[
+            'kommunekode',
+            'vejkode',
+            'vejmyndighed',
+            'vejmidtetype',
+            'vejklasse_brudt',
+            'trafikart_brudt',
+            'overflade_brudt',
+            'plads_brudt',
+            'fiktiv_brudt',
+            'tilogfrakoer_brudt',
+            'rundkoersel_brudt',
+            # 'niveau'
+        ],
+        maxdist=10.0,
+        segmentize=5.0
+    )
+)
+
+rules.append(
+    SegmentAttributesMustNotBeChanged(
+        'Unchanged rail attribs',
+        feature_type=fot.featuretype.JERNBANE_BRUDT,
+        unchangedattributes=[
+                'ejer_jernbane',
+                'sportype',
+        ],
+        maxdist=10.0,
+        segmentize=5.0,
+    )
+)
+
+
 
 with fot.qgisapp.QgisStandaloneApp(True) as app:
     print "App initialised"
