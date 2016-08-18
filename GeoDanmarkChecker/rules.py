@@ -69,7 +69,7 @@ rules_set.add_rule(
         'Unchanged building UUID',
         feature_type=fot.featuretype.BYGNING,
         unchangedattributes=['bygning_id'],
-        featurematcher=ApproximatePolygonMatcher(relativeareadeviation=0.5), # TODO: Consider hausdorffdistance here!
+        featurematcher=ApproximatePolygonMatcher(relativeintersectionarea=0.8), # TODO: Consider hausdorffdistance here!
         beforefilter='bygning_id IS NOT NULL'
     )
 )
@@ -87,7 +87,8 @@ rules_set.add_rule(
 rules_set.add_rule_category('Unchanged network attribs')
 
 # TODO: use segmentwise matching here instead of approximatelinematcher which tries to match entire geometry
-vejmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
+# Maybe start with a hausdorff distance to catch the cases where nothing changed much
+vejmatchoptions = {'minimumintersectionlength': 3, 'relativeintersectionlength':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
 rules_set.add_rule(
     'Unchanged network attribs',
     AttributesMustNotBeChanged(
@@ -112,7 +113,7 @@ rules_set.add_rule(
     )
 )
 
-railmatchoptions = {'minimumintersectionlength': 3, 'relativelengthdeviation':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
+railmatchoptions = {'minimumintersectionlength': 3, 'relativeintersectionlength':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
 rules_set.add_rule(
     'Unchanged network attribs',
     AttributesMustNotBeChanged(
