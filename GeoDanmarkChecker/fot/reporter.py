@@ -47,7 +47,7 @@ class Reporter(object):
 
         fields = [
             ('rulename', unicode(rulename).encode('utf-8')),
-            ('typeinfo', unicode(typeinfo).encode('utf-8')),
+            ('objecttype', unicode(typeinfo).encode('utf-8')),
             ('message', unicode(message).encode('utf-8')),
             ('level', unicode(level).encode('utf-8'))
         ]
@@ -84,7 +84,7 @@ class Reporter(object):
         self.db = OGRSPatialite(self.output_path)
         fields = [
             ('rulename', ogr.OFTString),
-            ('typeinfo', ogr.OFTString),
+            ('objecttype', ogr.OFTString),
             ('message', ogr.OFTString),
             ('level', ogr.OFTString)
         ]
