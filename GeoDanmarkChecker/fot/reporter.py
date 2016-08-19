@@ -29,7 +29,12 @@ class Reporter(object):
     def __init__(self, output_path):
         # output file is path and filename is a db based on timestamp
         self.output_path = output_path
+        self.linestring_table = 'error_linestring'
+        self.point_table = 'error_point'
+        self.polygon_table = 'error_polygon'
+        self.text_table = 'error_text'
         self._initialize_db()
+
 
     # Maybe take a Rule as first argument? Rule knows its name and should now what types are touched
     def error(self, rulename, typeinfo, message, geometry):
@@ -55,27 +60,31 @@ class Reporter(object):
         # QGis.flatType if we don't care about 25D and whatnot
         if geometry is None:
             print 'XXXXX text output xxxxx', message
-            self.db.add_feature_to_layer('text', fields, None)
+            self.db.add_feature_to_layer(
+                self.text_table,
+                fields,
+                None
+            )
         elif QGis.flatType(geometry.wkbType()) == QGis.WKBLineString:
             if geometry.length() < 0.001:
                 # Lines with length 0 tends to crash spatialite. Report as point instead
                 self.report(rulename, typeinfo, message, geometry.centroid(), level)
             else:
                 self.db.add_feature_to_layer(
-                    'linestring',
+                    self.linestring_table,
                     fields,
                     geometry
                 )
         elif QGis.flatType((geometry.wkbType())) == QGis.WKBPoint:
             self.db.add_feature_to_layer(
-                'point',
+                self.point_table,
                 fields,
                 geometry
             )
 
         elif QGis.flatType((geometry.wkbType())) == QGis.WKBPolygon:
             self.db.add_feature_to_layer(
-                'polygon',
+                self.polygon_table,
                 fields,
                 geometry
             )
@@ -90,25 +99,25 @@ class Reporter(object):
         ]
         # Add layer for linestring
         self.db.add_layer(
-            'linestring',
+            self.linestring_table,
             ogr.wkbLineString,
             fields
         )
         # Add layer for points
         self.db.add_layer(
-            'point',
+            self.point_table,
             ogr.wkbPoint,
             fields
         )
         # Add layer for polygons
         self.db.add_layer(
-            'polygon',
+            self.polygon_table,
             ogr.wkbPolygon,
             fields
         )
         # Add layer for plain text
         self.db.add_layer(
-            'text',
+            self.text_table,
             ogr.wkbNone,
             fields
         )

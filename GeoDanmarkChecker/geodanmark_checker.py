@@ -153,7 +153,7 @@ class GeoDanmarkChecker:
         """ Adds an sqlite database as layers, expects layers: linestring,
         point and polygon. """
 
-        tables = ['linestring', 'point', 'polygon']
+        tables = ['error_linestring', 'error_point', 'error_polygon']
         for table in tables:
             uri = QgsDataSourceURI()
             uri.setDatabase(sqlite)
@@ -166,7 +166,7 @@ class GeoDanmarkChecker:
             layer.setProviderEncoding(u'UTF-8')
             layer.dataProvider().setEncoding(u'UTF-8')
             # Add style from file
-            style_file = os.path.join(self.plugin_dir, 'styles', 'output_{0}.qml'.format(table))
+            style_file = os.path.join(self.plugin_dir, 'styles', '{0}.qml'.format(table))
             if os.path.isfile(style_file):
                 layer.loadNamedStyle(style_file)
             # Add layer to qgis
