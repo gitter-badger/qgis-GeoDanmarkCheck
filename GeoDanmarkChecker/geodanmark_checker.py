@@ -34,8 +34,8 @@ from PyQt4.QtGui import (
 from qgis.core import (
     QgsMapLayerRegistry,
     QgsDataSourceURI,
-    QgsVectorLayer
-)
+    QgsVectorLayer,
+    QgsProject)
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
@@ -154,6 +154,8 @@ class GeoDanmarkChecker:
         point and polygon. """
 
         tables = ['error_linestring', 'error_point', 'error_polygon']
+        group_name = os.path.splitext(os.path.basename(sqlite))[0]
+        legend_group = QgsProject.instance().layerTreeRoot().insertGroup(0, group_name)
         for table in tables:
             uri = QgsDataSourceURI()
             uri.setDatabase(sqlite)
@@ -169,9 +171,12 @@ class GeoDanmarkChecker:
             style_file = os.path.join(self.plugin_dir, 'styles', '{0}.qml'.format(table))
             if os.path.isfile(style_file):
                 layer.loadNamedStyle(style_file)
-            # Add layer to qgis
-            if not QgsMapLayerRegistry.instance().addMapLayer(layer):
+            # Add layer to qgis - but dont add to legend directly
+            if QgsMapLayerRegistry.instance().addMapLayer(layer, False):
+                legend_group.addLayer(layer)
+            else:
                 print('Unable to add layer: {}'.format(table))
+
 
 
     def run(self):
