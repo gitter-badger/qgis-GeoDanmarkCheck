@@ -17,8 +17,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
-
 class RulesSet(object):
     """ Contains a rules set, a dict of 'category_name' : [list of rules] """
 
@@ -44,6 +42,7 @@ from fot.rules.compare.compareattributes import AttributesMustNotBeChanged, Segm
 from fot.rules.compare.preliminaryobjects import PreliminaryObjectsRule
 from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher, NearbyObjectsGeometryMatcher
 from fot.rules.compare.piperule import PipeRule
+from fot.rules.validate.singlelayer.duplicategeom import DuplicateLineStringLayerGeometries
 
 
 rules_set = RulesSet('GeoDanmark Rules')
@@ -108,7 +107,6 @@ rules_set.add_rule(
     )
 )
 
-railmatchoptions = {'minimumintersectionlength': 3, 'relativeintersectionlength':0.20, 'linebuffer': 0.2}  # Vi gider ikke høre om stykker kortere end 1 meter
 rules_set.add_rule(
     'Unchanged network attribs',
     SegmentAttributesMustNotBeChanged(
@@ -155,5 +153,36 @@ rules_set.add_rule(
         fot.featuretype.VANDLOEBSMIDTE_BRUDT,
         attributename='vandloebstype',
         isvalidfunction=lambda val: val in [u'Almindelig', u'Gennem sø', u'Rørlagt']
+    )
+)
+
+rules_set.add_rule_category('Duplicate geometry')
+rules_set.add_rule(
+    'Duplicate geometry',
+    DuplicateLineStringLayerGeometries(
+        'Duplicate road centreline',
+        fot.featuretype.VEJMIDTE_BRUDT,
+        equalstolerance=0.1,
+        segmentize=5.0
+    )
+)
+
+rules_set.add_rule(
+    'Duplicate geometry',
+    DuplicateLineStringLayerGeometries(
+        'Duplicate railroad centreline',
+        fot.featuretype.JERNBANE_BRUDT,
+        equalstolerance=0.1,
+        segmentize=5.0
+    )
+)
+
+rules_set.add_rule(
+    'Duplicate geometry',
+    DuplicateLineStringLayerGeometries(
+        'Duplicate stream centreline',
+        fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+        equalstolerance=0.1,
+        segmentize=5.0
     )
 )
