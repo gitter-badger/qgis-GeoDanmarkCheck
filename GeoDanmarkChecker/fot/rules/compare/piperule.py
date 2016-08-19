@@ -74,7 +74,7 @@ class PipeRule(CompareRule):
                 errorreporter.error(
                     self.name,
                     self.featuretype,
-                    'Piped stream changed (matching {} not found)'.format(self.fotid_attribute.lower()),
+                    'Piped stream changed (Object illegally deleted)',
                     fgeom)
                 continue
 
