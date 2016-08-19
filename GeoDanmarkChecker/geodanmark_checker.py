@@ -153,7 +153,7 @@ class GeoDanmarkChecker:
         """ Adds an sqlite database as layers, expects layers: linestring,
         point and polygon. """
 
-        tables = ['error_linestring', 'error_point', 'error_polygon']
+        tables = ['error_point', 'error_linestring', 'error_polygon']
         group_name = os.path.splitext(os.path.basename(sqlite))[0]
         legend_group = QgsProject.instance().layerTreeRoot().insertGroup(0, group_name)
         for table in tables:
