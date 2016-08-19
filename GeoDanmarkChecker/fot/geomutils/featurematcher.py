@@ -79,7 +79,7 @@ class ExactGeometryMatcher(object):
 
 class HausdorffGeometryMatcher(ExactGeometryMatcher):
     def __init__(self, maxhausdorffdistance, **kwargs):
-        super(NearbyObjectsGeometryMatcher, self).__init__(**kwargs)
+        super(HausdorffGeometryMatcher, self).__init__(**kwargs)
         self.maxhausdorffdistance = float(maxhausdorffdistance)
         self.bboxexpansion = maxhausdorffdistance
 
