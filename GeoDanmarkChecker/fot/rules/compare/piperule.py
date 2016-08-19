@@ -88,7 +88,7 @@ class PipeRule(CompareRule):
                 messages = []
                 try:
                     if not f[attrib] == afterfeature[attrib]:
-                        messages.append(u'Attribute {0} changed from {1} to {2}'.format(attrib, f[attrib], afterfeature[attrib]))
+                        messages.append(u'Attribute {0} changed from "{1}" to "{2}"'.format(attrib, f[attrib], afterfeature[attrib]))
                 except KeyError as e:
                     messages.append(u'Attribute {0} not found'.format(attrib))
                 if messages:

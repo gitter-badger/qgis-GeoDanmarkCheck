@@ -70,14 +70,14 @@ class PreliminaryObjectsRule(CompareRule):
                         errorreporter.error(
                             self.name,
                             self.featuretype,
-                            'Preliminary object ({0}={1}) geometry changed but still preliminary'.format(self.idcolumn, fot_id),
+                            'Preliminary object ({0}="{1}") geometry changed but still preliminary'.format(self.idcolumn, fot_id),
                             f)
                     changed_attributes = changedattributes(f, prelim_after[0])
                     if changed_attributes:
                         errorreporter.error(
                             self.name,
                             self.featuretype,
-                            'Preliminary object ({0}={1}) attributes changed but still preliminary'
+                            'Preliminary object ({0}="{1}") attributes changed but still preliminary'
                                 .format(self.idcolumn, fot_id),
                             f)
 
@@ -102,7 +102,7 @@ class PreliminaryObjectsRule(CompareRule):
                 errorreporter.error(
                     self.name,
                     self.featuretype,
-                    'Preliminary object ({0}={1}) deleted without new object registered'.format(self.idcolumn, fot_id),
+                    'Preliminary object ({0}="{1}") deleted without new object registered'.format(self.idcolumn, fot_id),
                     f)
                 continue
 
@@ -110,7 +110,7 @@ class PreliminaryObjectsRule(CompareRule):
                 errorreporter.warning(
                     self.name,
                     self.featuretype,
-                    'Preliminary object ({0}={1}) not deleted but new object registered'.format(self.idcolumn, fot_id),
+                    'Preliminary object ({0}="{1}") not deleted but new object registered'.format(self.idcolumn, fot_id),
                     shortestline(f, new_object))
 
 

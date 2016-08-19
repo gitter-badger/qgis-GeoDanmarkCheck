@@ -37,7 +37,12 @@ class UniqueAttributeValue(SingleLayerRule):
                 if value in self.attributevalues:
                     # Wooops not unique!
                     errorgeom = shortestline(feature, self.attributevalues[value])
-                    reporter.error(self.name, self.featuretype, self.attributename + "=" + unicode(value) + " not unique", errorgeom)
+                    reporter.error(
+                        self.name,
+                        self.featuretype,
+                        self.attributename + '="' + unicode(value) + '" not unique',
+                        errorgeom
+                    )
                 else:
                     self.attributevalues[value] = feature
             except Exception as e:

@@ -53,7 +53,7 @@ class AttributesMustNotBeChanged(CompareRule):
                 for attrib in self.unchangedattributes:
                     try:
                         if not f1[attrib] == f2[attrib]:
-                            messages.append(u'Attribute {0} changed from {1} to {2}'.format(attrib, f1[attrib], f2[attrib]))
+                            messages.append(u'Attribute {0} changed from "{1}" to "{2}"'.format(attrib, f1[attrib], f2[attrib]))
                     except KeyError as e:
                         messages.append(u'Attribute {0} not found'.format(attrib))
                 if messages:
@@ -118,11 +118,11 @@ class SegmentAttributesMustNotBeChanged(CompareRule):
         for attrib in self.unchangedattributes:
             try:
                 if not fbefore[attrib] == fafter[attrib]:
-                    messages.append(u'{0}: {1} -> {2}'.format(attrib, fbefore[attrib], fafter[attrib]))
+                    messages.append(u'{0}: "{1}" -> "{2}"'.format(attrib, fbefore[attrib], fafter[attrib]))
             except KeyError as e:
                 messages.append(u'{0} not found'.format(attrib))
         if messages:
-            message = "Attribute error: " + '; '.join(messages)
+            message = "Attribute changed: " + '; '.join(messages)
             errorreporter.error(self.name, self.featuretype, message, geom)
 
 
