@@ -63,10 +63,17 @@ class GeoDanmarkCheckerDialog(QDialog, FORM_CLASS):
         self._fill_tree()
 
     def select_before_file(self):
-        self.before_dataset_input.setText(QFileDialog.getOpenFileName())
+        # http://stackoverflow.com/questions/23002801/pyqt-how-to-make-getopenfilename-remember-last-opening-path
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        if dialog.exec_() == QDialog.Accepted:
+            self.before_dataset_input.setText(dialog.selectedFiles()[0])
 
     def select_after_file(self):
-        self.after_dataset_input.setText(QFileDialog.getOpenFileName())
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        if dialog.exec_() == QDialog.Accepted:
+            self.after_dataset_input.setText(dialog.selectedFiles()[0])
 
     def _create_widget_item(self, rule_name, rule):
         """ Creates a widget item from a rule object. """
