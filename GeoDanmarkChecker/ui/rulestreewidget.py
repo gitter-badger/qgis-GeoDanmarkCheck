@@ -139,7 +139,7 @@ class RulesTreeWidget(QTreeWidget):
         iterator = QTreeWidgetItemIterator(self)
         item = iterator.value()
         while item:
-            if item.rule:
+            if item.checkState(0) == Qt.Checked and item.rule:
                 rules.append(item.rule)
             iterator += 1
             item = iterator.value()

@@ -40,7 +40,7 @@ from qgis.core import (
 import resources
 # Import the code for the dialog
 from .ui.geodanmark_checker_dialog import GeoDanmarkCheckerDialog
-from .rules import rules_set
+from .rules import single_file_rules, update_rules
 from fot.reporter import Reporter
 # from fot.progress import ProgressReporter
 from .ui.progressdialog import ProgressDialog
@@ -85,7 +85,7 @@ class GeoDanmarkChecker:
                 QCoreApplication.installTranslator(self.translator)
 
         # Create the dialog (after translation) and keep reference
-        rules = rules_set
+        rules = [update_rules,single_file_rules]
         self.dlg = GeoDanmarkCheckerDialog(rules)
 
         # Declare instance attributes
@@ -203,7 +203,8 @@ class GeoDanmarkChecker:
             reporter = Reporter(output_file)
             progress = ProgressDialog(self.iface.messageBar())
 
-            rules = self.dlg.get_rules()
+            rules = self.dlg.getcomparerules()
+            rules += self.dlg.getvalidationrules()
             exe = RuleExecutor(
                 Repository(before_file),
                 Repository(after_file)

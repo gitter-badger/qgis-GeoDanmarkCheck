@@ -67,3 +67,9 @@ class GeoDanmarkCheckerDialog(QDialog, FORM_CLASS):
         dialog.setFileMode(QFileDialog.ExistingFile)
         if dialog.exec_() == QDialog.Accepted:
             self.after_dataset_input.setText(dialog.selectedFiles()[0])
+
+    def getvalidationrules(self):
+        return self.rules_validate.get_rules()
+
+    def getcomparerules(self):
+        return self.rules_compare.get_rules()

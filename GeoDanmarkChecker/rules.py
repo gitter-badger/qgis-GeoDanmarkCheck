@@ -17,12 +17,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+from collections import defaultdict
+
+
 class RulesSet(object):
     """ Contains a rules set, a dict of 'category_name' : [list of rules] """
 
     def __init__(self, name):
         self.name = name
-        self.rules = {}
+        self.rules = defaultdict(list)
 
     def __len__(self):
         return len(self.rules)
@@ -45,11 +48,72 @@ from fot.rules.compare.piperule import PipeRule
 from fot.rules.validate.singlelayer.duplicategeom import DuplicateLineStringLayerGeometries
 
 
-rules_set = RulesSet('GeoDanmark Rules')
+single_file_rules = RulesSet('GeoDanmark Rules')
+update_rules = RulesSet('GeoDanmark Update Rules')
 
-rules_set.add_rule_category('Preliminary')
+"""
+* ***************************************************
+*   Rules concerning only one version of the data
+* ***************************************************
+"""
+
+single_file_rules.add_rule(
+    'Building UUID',
+    UniqueAttributeValue(
+        'Building UUID unique',
+        feature_type=fot.featuretype.BYGNING,
+        attributename='bygning_id',
+        filter='bygning_id IS NOT NULL'
+    )
+)
+
+single_file_rules.add_rule(
+    'Stream centrelines',
+    AttributeRule(
+        'Stream.vandloebstype',
+        fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+        attributename='vandloebstype',
+        isvalidfunction=lambda val: val in [u'Almindelig', u'Gennem sø', u'Rørlagt']
+    )
+)
+
+single_file_rules.add_rule(
+    'Duplicate geometry',
+    DuplicateLineStringLayerGeometries(
+        'Duplicate road centreline',
+        fot.featuretype.VEJMIDTE_BRUDT,
+        equalstolerance=0.1,
+        segmentize=5.0
+    )
+)
+
+single_file_rules.add_rule(
+    'Duplicate geometry',
+    DuplicateLineStringLayerGeometries(
+        'Duplicate railroad centreline',
+        fot.featuretype.JERNBANE_BRUDT,
+        equalstolerance=0.1,
+        segmentize=5.0
+    )
+)
+
+single_file_rules.add_rule(
+    'Duplicate geometry',
+    DuplicateLineStringLayerGeometries(
+        'Duplicate stream centreline',
+        fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+        equalstolerance=0.1,
+        segmentize=5.0
+    )
+)
+
+"""
+* ***************************************************
+*   Rules comparing two versions of the data
+* ***************************************************
+"""
 for t in fot.featuretype.featuretypes:
-    rules_set.add_rule(
+    update_rules.add_rule(
         'Preliminary',
         PreliminaryObjectsRule(
             name=t.name + ' preliminary objects',
@@ -59,8 +123,7 @@ for t in fot.featuretype.featuretypes:
         )
     )
 
-rules_set.add_rule_category('Building UUID')
-rules_set.add_rule(
+update_rules.add_rule(
     'Building UUID',
     AttributesMustNotBeChanged(
         'Unchanged building UUID',
@@ -71,19 +134,7 @@ rules_set.add_rule(
     )
 )
 
-rules_set.add_rule(
-    'Building UUID',
-    UniqueAttributeValue(
-        'Building UUID unique',
-        feature_type=fot.featuretype.BYGNING,
-        attributename='bygning_id',
-        filter='bygning_id IS NOT NULL'
-    )
-)
-
-rules_set.add_rule_category('Unchanged network attribs')
-
-rules_set.add_rule(
+update_rules.add_rule(
     'Unchanged network attribs',
     SegmentAttributesMustNotBeChanged(
         'Unchanged road attribs',
@@ -100,14 +151,14 @@ rules_set.add_rule(
             'fiktiv_brudt',
             'tilogfrakoer_brudt',
             'rundkoersel_brudt',
-            'niveau'
+            #'niveau'
         ],
         maxdist=10.0,
         segmentize=5.0
     )
 )
 
-rules_set.add_rule(
+update_rules.add_rule(
     'Unchanged network attribs',
     SegmentAttributesMustNotBeChanged(
         'Unchanged rail attribs',
@@ -121,7 +172,6 @@ rules_set.add_rule(
     )
 )
 
-rules_set.add_rule_category('Stream centrelines')
 pipe_no_touch_attributes=['Ejer_vandloebsmidte',
                                     'Fra_dato_fot',
                                     'Geometri_status',
@@ -135,7 +185,7 @@ pipe_no_touch_attributes=['Ejer_vandloebsmidte',
                                     'Slutknude_vandloebsmidte',
                                     'Synlig_Vandloebsmidte',
                                     'Vandloebstype']
-rules_set.add_rule(
+update_rules.add_rule(
     'Stream centrelines',
     PipeRule(
         'Pipes unchanged',
@@ -146,43 +196,7 @@ rules_set.add_rule(
     )
 )
 
-rules_set.add_rule(
-    'Stream centrelines',
-    AttributeRule(
-        'Stream.vandloebstype',
-        fot.featuretype.VANDLOEBSMIDTE_BRUDT,
-        attributename='vandloebstype',
-        isvalidfunction=lambda val: val in [u'Almindelig', u'Gennem sø', u'Rørlagt']
-    )
-)
 
-rules_set.add_rule_category('Duplicate geometry')
-rules_set.add_rule(
-    'Duplicate geometry',
-    DuplicateLineStringLayerGeometries(
-        'Duplicate road centreline',
-        fot.featuretype.VEJMIDTE_BRUDT,
-        equalstolerance=0.1,
-        segmentize=5.0
-    )
-)
 
-rules_set.add_rule(
-    'Duplicate geometry',
-    DuplicateLineStringLayerGeometries(
-        'Duplicate railroad centreline',
-        fot.featuretype.JERNBANE_BRUDT,
-        equalstolerance=0.1,
-        segmentize=5.0
-    )
-)
 
-rules_set.add_rule(
-    'Duplicate geometry',
-    DuplicateLineStringLayerGeometries(
-        'Duplicate stream centreline',
-        fot.featuretype.VANDLOEBSMIDTE_BRUDT,
-        equalstolerance=0.1,
-        segmentize=5.0
-    )
-)
+rules_set = [single_file_rules, update_rules]
