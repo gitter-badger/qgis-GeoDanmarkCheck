@@ -19,7 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from .singlelayerrule import SingleLayerRule
-from ....geomutils import shortestline, extractlinestrings
+from ....geomutils.errorgeometry import createlinemarker
 
 class UniqueAttributeValue(SingleLayerRule):
     def __init__(self, name, feature_type, attributename, filter=None):
@@ -36,7 +36,7 @@ class UniqueAttributeValue(SingleLayerRule):
                 value = feature[self.attributename]
                 if value in self.attributevalues:
                     # Wooops not unique!
-                    errorgeom = shortestline(feature, self.attributevalues[value])
+                    errorgeom = createlinemarker(feature, self.attributevalues[value])
                     reporter.error(
                         self.name,
                         self.featuretype,

@@ -21,6 +21,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from .comparerule import CompareRule
 from ...repository import Repository
 from ...geomutils import FeatureIndex, geometryequal, shortestline, changedattributes
+from ...geomutils.errorgeometry import createlinemarker
 from ...geomutils.featurematcher import MatchFinder
 
 
@@ -111,7 +112,7 @@ class PreliminaryObjectsRule(CompareRule):
                     self.name,
                     self.featuretype,
                     'Preliminary object ({0}="{1}") not deleted but new object registered'.format(self.idcolumn, fot_id),
-                    shortestline(f, new_object))
+                    createlinemarker(f, new_object))
 
 
 
