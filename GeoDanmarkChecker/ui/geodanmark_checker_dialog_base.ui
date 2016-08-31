@@ -30,6 +30,9 @@
    </item>
    <item>
     <widget class="RulesTreeWidget" name="rules_validate">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <column>
       <property name="text">
        <string notr="true">1</string>
@@ -53,6 +56,9 @@
    </item>
    <item>
     <widget class="RulesTreeWidget" name="rules_compare">
+     <property name="enabled">
+      <bool>false</bool>
+     </property>
      <column>
       <property name="text">
        <string notr="true">1</string>

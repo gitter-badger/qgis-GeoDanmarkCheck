@@ -23,7 +23,8 @@ import os
 from PyQt4 import uic
 from PyQt4.QtGui import (
     QDialog,
-    QFileDialog
+    QFileDialog,
+    QDialogButtonBox
 )
 
 FORM_CLASS, _ = uic.loadUiType(
@@ -55,6 +56,13 @@ class GeoDanmarkCheckerDialog(QDialog, FORM_CLASS):
         self.before_dataset.clicked.connect(self.select_before_file)
         self.after_dataset.clicked.connect(self.select_after_file)
 
+        # React on files being selected
+        self.after_dataset_input.textChanged.connect(self.file_changed)
+        self.before_dataset_input.textChanged.connect(self.file_changed)
+
+        # Disable OK button
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(False)
+
     def select_before_file(self):
         # http://stackoverflow.com/questions/23002801/pyqt-how-to-make-getopenfilename-remember-last-opening-path
         dialog = QFileDialog(self)
@@ -67,6 +75,13 @@ class GeoDanmarkCheckerDialog(QDialog, FORM_CLASS):
         dialog.setFileMode(QFileDialog.ExistingFile)
         if dialog.exec_() == QDialog.Accepted:
             self.after_dataset_input.setText(dialog.selectedFiles()[0])
+
+    def file_changed(self):
+        before_file_exists = os.path.isfile(self.before_dataset_input.text())
+        after_file_exists = os.path.isfile(self.after_dataset_input.text())
+        self.rules_validate.setEnabled(after_file_exists)
+        self.rules_compare.setEnabled(before_file_exists and after_file_exists)
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(after_file_exists)
 
     def getvalidationrules(self):
         return self.rules_validate.get_rules()
