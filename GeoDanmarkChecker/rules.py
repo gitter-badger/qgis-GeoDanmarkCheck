@@ -151,7 +151,7 @@ update_rules.add_rule(
             'fiktiv_brudt',
             'tilogfrakoer_brudt',
             'rundkoersel_brudt',
-            #'niveau'
+            'niveau'
         ],
         maxdist=10.0,
         segmentize=5.0
