@@ -36,11 +36,18 @@ import os
 
 rules = []
 # Get rules from rules.py
-from rules import rules_set
-for cat, lst in rules_set.rules.iteritems():
-    #if cat == 'Building UUID':
-    #   rules += lst
-    rules += lst
+from rules import single_file_rules, update_rules
+for cat, lst in single_file_rules.rules.iteritems():
+    if cat == 'Building UUID':
+       #rules += lst
+        rules += [r for r in lst if isinstance(r, UniqueAttributeValue)]
+    #rules += lst
+
+for cat, lst in update_rules.rules.iteritems():
+    if cat == 'Building UUID':
+       #rules += lst
+        rules += [r for r in lst if isinstance(r, UniqueAttributeValue)]
+    #rules += lst
 
 with fot.qgisapp.QgisStandaloneApp(True) as app:
     print "App initialised"
