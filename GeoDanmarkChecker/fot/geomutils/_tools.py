@@ -166,6 +166,16 @@ def toflatcoordinates(feature):
         return [coord for ring in g.asPolygon() for coord in ring]
     raise TypeError("Unknown geometry type: " + str(type))
 
+def tocoordinates3d(feature):
+    """
+    Retrieves the sequence of geometries, rings and 3D vertices.
+    Note: Doesnt use the same return structure as tocoordinates()
+    :param feature:
+    :return:
+    """
+    g = togeometry(feature)
+    gv2 = g.geometry()  # V2 geometry
+    return gv2.coordinateSequence()
 
 
 
