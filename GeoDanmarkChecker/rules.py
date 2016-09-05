@@ -46,6 +46,8 @@ from fot.rules.compare.preliminaryobjects import PreliminaryObjectsRule
 from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher, NearbyObjectsGeometryMatcher
 from fot.rules.compare.piperule import PipeRule
 from fot.rules.validate.singlelayer.duplicategeom import DuplicateLineStringLayerGeometries
+from fot.rules.validate.networkislands import NetworkIslands
+from fot.rules.compare.networkbroken import NetworkBroken
 
 
 single_file_rules = RulesSet('GeoDanmark Rules')
@@ -104,6 +106,16 @@ single_file_rules.add_rule(
         fot.featuretype.VANDLOEBSMIDTE_BRUDT,
         equalstolerance=0.1,
         segmentize=5.0
+    )
+)
+
+single_file_rules.add_rule(
+    'Road network',
+    NetworkIslands(
+        'Road network island',
+        [fot.featuretype.VEJMIDTE_BRUDT],
+        minlength=500,
+        minnodes=10
     )
 )
 
@@ -196,7 +208,24 @@ update_rules.add_rule(
     )
 )
 
+update_rules.add_rule(
+    'Stream centrelines',
+    NetworkBroken(
+        'Stream network broken',
+        feature_type=fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+        maxcostfactor=2.0   # Error if route has become more than 2 times longer
+    )
 
+)
 
+update_rules.add_rule(
+    'Road centrelines',
+    NetworkBroken(
+        'Road network broken',
+        feature_type=fot.featuretype.VEJMIDTE_BRUDT,
+        maxcostfactor=2.0   # Error if route has become more than 2 times longer
+    )
+
+)
 
 rules_set = [single_file_rules, update_rules]
