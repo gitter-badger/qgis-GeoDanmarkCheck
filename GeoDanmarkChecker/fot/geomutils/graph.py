@@ -22,7 +22,7 @@ import heapq
 
 from . import tocoordinates, tocoordinates3d
 from collections import defaultdict
-from qgis.core import QgsPoint
+from qgis.core import QgsPoint, QgsGeometry
 
 
 class Node2D(object):
@@ -100,7 +100,11 @@ class Graph(object):
         q = [(0, fromnode, ())]  # Heap of (cost, path_head, path_rest).
         visited = set()  # Visited vertices.
         while True:
-            (cost, v1, path) = heapq.heappop(q)
+            try:
+                (cost, v1, path) = heapq.heappop(q)
+            except IndexError as e:
+                # Ran out of nodes before reaching tonode -> No route found
+                return None, None
             if v1 not in visited:
                 visited.add(v1)
                 if v1 == tonode:
@@ -181,7 +185,12 @@ class GraphBuilder(object):
         return QgsPoint(x,y)
 
 
-
+def path_to_linestring(graph, path):
+    coords = tocoordinates(graph.get_edge(path[0], path[1]).feature)
+    for i in range(1, len(path) - 1):
+        f = graph.get_edge(path[i], path[i+1]).feature
+        coords += tocoordinates(f)[1:]
+    return QgsGeometry.fromPolyline(coords)
 
 
 if __name__ == '__main__':
