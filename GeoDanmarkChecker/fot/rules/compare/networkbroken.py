@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from ... import Repository
 from ... import FeatureType
-from ...geomutils.featurematcher import MatchFinder, ExactGeometryMatcher
+from ...geomutils.featurematcher import MatchFinder, ExactGeometryMatcher, NearbyObjectsGeometryMatcher
 from ...geomutils.segmentmatcher import SegmentMatchFinder
 from ...geomutils.graph import GraphBuilder, path_to_linestring
 from .comparerule import CompareRule
@@ -40,6 +40,7 @@ class NetworkBroken(CompareRule):
             raise TypeError()
         self.featuretype = feature_type
         self.maxcostfactor = float(maxcostfactor)
+        self.deletewithin = 1.0
 
     def execute(self, beforerepo, afterrepo, errorreporter, progressreporter):
         if not isinstance(beforerepo, Repository):
@@ -80,28 +81,30 @@ class NetworkBroken(CompareRule):
         # graph of network after
         after_graph = gbuilder.build(afterfeats)
         progressreporter.completed_one()
-
+        segment_matcher = SegmentMatchFinder(afterfeats, segmentize=5.0)
         # Now look at each set of connected lines
         for component in changed_lines_graph.connected_components():
-            self._check_component(component, gbuilder, after_graph, errorreporter)
-
-    def _check_component(self, graph, graphbuilder,  aftergraph, errorreporter):
-        # graph is a connected set of lines which do not exist in afterfeats
-        # Check, if removing/changing these features has mean significantly longer routes
-        end_nodes = list(graph.get_nodes_of_degree(1))  # end points of the graph
-        for i in range(len(end_nodes) - 1):
-            nodei = end_nodes[i]
-            if not nodei in aftergraph.nodes:
-                continue
-            for j in range(i + 1, len(end_nodes)):
-                nodej = end_nodes[j]
-                if not nodej in aftergraph.nodes:
+            # graph is a connected set of lines which do not exist in afterfeats
+            # Check, if removing/changing these features has mean significantly longer routes
+            end_nodes = list(component.get_nodes_of_degree(1))  # end points of the graph
+            for i in range(len(end_nodes) - 1):
+                nodei = end_nodes[i]
+                if not nodei in after_graph.nodes:
                     continue
-                before_cost, before_path = graph.shortest_path(nodei, nodej)
-                after_cost, after_path = aftergraph.shortest_path(nodei, nodej)
-                if not after_path or after_cost > before_cost * self.maxcostfactor:
-                    pathgeom = path_to_linestring(graph, before_path)
-                    errorreporter.error(self.name, self.featuretype, "Network possibly broken along this path", pathgeom)
+                for j in range(i + 1, len(end_nodes)):
+                    nodej = end_nodes[j]
+                    if not nodej in after_graph.nodes:
+                        continue
+                    before_cost, before_path = component.shortest_path(nodei, nodej)
+                    after_cost, after_path = after_graph.shortest_path(nodei, nodej)
+                    if not after_path or after_cost > before_cost * self.maxcostfactor:
+                        pathgeom = path_to_linestring(component, gbuilder, before_path)
+                        # Delete path where there actually is a network component nearby in the after scenario
+                        for segment_match in segment_matcher.findmatching(pathgeom, self.deletewithin):
+                            matching_geom = segment_match.togeometry()
+                            buffered = matching_geom.buffer(self.deletewithin, 8, 2, 1, 100.0)  # endCapStyle=2, joinStyle=1, mitreLimit=100.0)
+                            pathgeom = pathgeom.difference(buffered)
+                        errorreporter.error(self.name, self.featuretype, "Network possibly broken along this path", pathgeom)
 
 
 
