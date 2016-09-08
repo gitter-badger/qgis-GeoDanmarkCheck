@@ -30,6 +30,9 @@ class Node2D(object):
         self.x = x
         self.y = y
 
+    def equals2D(self, other):
+        return self.x == other.x and self.y == other.y
+
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y
 
@@ -47,6 +50,9 @@ class Node3D(object):
         self.x = x
         self.y = y
         self.z = z
+
+    def equals2D(self, other):
+        return self.x == other.x and self.y == other.y
 
     def __eq__(self, other):
         return self.x == other.x and self.y == other.y and self.z == other.z
@@ -159,12 +165,17 @@ class GraphBuilder(object):
 
     def get_edge(self, feature):
         cost = self.costfunction(feature)
-        return Edge(feature, cost)
+        e = Edge(feature, cost)
+        return e
 
     def _get_nodes(self, edge):
         coords = tocoordinates3d(edge.feature)
         p0 = coords[0][0][0]
         p1 = coords[0][0][-1]
+        if edge.reverse:
+            tmp = p0
+            p0 = p1
+            p1 = tmp
         n0 = self.point_to_node(p0)
         n1 = self.point_to_node(p1)
         return n0, n1
@@ -185,11 +196,19 @@ class GraphBuilder(object):
         return QgsPoint(x,y)
 
 
-def path_to_linestring(graph, path):
-    coords = tocoordinates(graph.get_edge(path[0], path[1]).feature)
+def path_to_linestring(graph, builder, path):
+    def get_edge_coordinates_from_node(start_node, builder, edge):
+        coords = tocoordinates(edge.feature)
+        node_point = builder.node_to_point(start_node)
+        if node_point.sqrDist(coords[0]) > builder.scale:
+            coords.reverse()
+        return coords
+
+    e = graph.get_edge(path[0], path[1])
+    coords = get_edge_coordinates_from_node(path[0], builder, e)
     for i in range(1, len(path) - 1):
-        f = graph.get_edge(path[i], path[i+1]).feature
-        coords += tocoordinates(f)[1:]
+        e = graph.get_edge(path[i], path[i+1])
+        coords += get_edge_coordinates_from_node(path[i], builder, e)
     return QgsGeometry.fromPolyline(coords)
 
 
