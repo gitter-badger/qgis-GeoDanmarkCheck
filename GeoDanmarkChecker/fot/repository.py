@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from qgis.core import QgsVectorLayer, QgsFeatureRequest, QgsRectangle
 from .featuretype import FeatureType
 
+class InvalidLayerException(Exception):
+    pass
+
 class Repository(object):
 
     def __init__(self, filename):
@@ -55,7 +58,7 @@ class Repository(object):
         url = self.filename+"|layername="+feature_type.tablename
         vlayer = QgsVectorLayer(url, "layer_name_you_like", "ogr")
         if not vlayer.isValid():
-            raise( Exception(url + " is not a valid layer") )
+            raise( InvalidLayerException(url + " is not a valid layer") )
         return vlayer
 
 print "Before main"
