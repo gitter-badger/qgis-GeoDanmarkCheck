@@ -13,7 +13,7 @@ def linemarkerpoint(g, fromgeom=None):
     if g.type() == QGis.Point:
         return g
     elif g.type() == QGis.Line:
-        #length = g.length()
+        length = g.length()
         # if False and fromgeom and length > 2 * MARKER_SHRINK_SIZE:
         #     # 'shrink' line by x meters in each end
         #     p0 = g.interpolate(MARKER_SHRINK_SIZE).asPoint()
@@ -34,7 +34,7 @@ def linemarkerpoint(g, fromgeom=None):
         #     shortedline = QgsGeometry.fromPolyline(outcoords)
         #     return shortedline.nearestPoint(fromgeom)
         # else:
-        return g.centroid()
+        return g.interpolate(length * 0.5)
     elif g.type() == QGis.Polygon:
         if fromgeom:
             return g.buffer(-1 * MARKER_SHRINK_SIZE, 8).nearestPoint(fromgeom)
