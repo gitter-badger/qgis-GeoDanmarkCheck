@@ -34,13 +34,13 @@ def bbox(f):
         return [f.xMinimum(), f.yMinimum(), f.xMaximum(), f.yMaximum()]
 
     # Potentially a bbox or list of geoms or features
-    if isinstance(f, (list, tuple)) and len(f) == 4:
-        if all([isinstance(n, (int, float)) for n in f]):
+    if isinstance(f, (list, tuple)) and len(f) > 0:
+        if len(f) == 4 and all([isinstance(n, (int, float)) for n in f]):
             # This is a bbox itself
             return f
-    bboxes = [bbox(o) for o in f]
-    xmins, ymins, xmaxs, ymaxs = zip(*bboxes)
-    return [min(xmins), min(ymins), max(xmaxs), max(ymaxs)]
+        bboxes = [bbox(o) for o in f]
+        xmins, ymins, xmaxs, ymaxs = zip(*bboxes)
+        return [min(xmins), min(ymins), max(xmaxs), max(ymaxs)]
 
 
 def bboxoverlaps(f1, f2):
@@ -72,8 +72,6 @@ class FeatureIndex():
         return index[value]
 
     def insert(self, features):
-        if not features:
-            return
         if isinstance(features, QgsFeature):
             features = [features]
         if not all(isinstance(f, QgsFeature) for f in features):
@@ -87,7 +85,8 @@ class FeatureIndex():
         if self.usespatialindex:
             if not self.spatialindex:
                 # Can be optimized wrgt bbox calculations being repeated later
-                self.bbox = bbox(features)
+                box = bbox(features)
+                self.bbox = box if box else (0,0,0,0)
                 # QgsSpatialIndex only returns FID of intersecting features. When we dont have FIDs this is not good
                 self.spatialindex = Index(bbox=self.bbox)
             else:
