@@ -64,8 +64,8 @@ single_file_rules.add_rule(
     UniqueAttributeValue(
         'Building UUID unique',
         feature_type=fot.featuretype.BYGNING,
-        attributename='bygning_id',
-        filter='bygning_id IS NOT NULL'
+        attributename='Bygning_ID',
+        filter='Bygning_ID IS NOT NULL'
     )
 )
 
@@ -74,7 +74,7 @@ single_file_rules.add_rule(
     AttributeRule(
         'Stream.vandloebstype',
         fot.featuretype.VANDLOEBSMIDTE_BRUDT,
-        attributename='vandloebstype',
+        attributename='Vandloebstype',
         isvalidfunction=lambda val: val in [u'Almindelig', u'Gennem sø', u'Rørlagt']
     )
 )
@@ -140,9 +140,9 @@ update_rules.add_rule(
     AttributesMustNotBeChanged(
         'Unchanged building UUID',
         feature_type=fot.featuretype.BYGNING,
-        unchangedattributes=['bygning_id'],
+        unchangedattributes=['Bygning_ID'],
         featurematcher=ApproximatePolygonMatcher(relativeintersectionarea=0.8), # TODO: Consider hausdorffdistance here!
-        beforefilter='bygning_id IS NOT NULL'
+        beforefilter='Bygning_ID IS NOT NULL'
     )
 )
 
@@ -152,18 +152,18 @@ update_rules.add_rule(
         'Unchanged road attribs',
         feature_type=fot.featuretype.VEJMIDTE_BRUDT,
         unchangedattributes=[
-            'kommunekode',
-            'vejkode',
-            'vejmyndighed',
-            'vejmidtetype',
-            'vejklasse_brudt',
-            'trafikart_brudt',
-            'overflade_brudt',
-            'plads_brudt',
-            'fiktiv_brudt',
-            'tilogfrakoer_brudt',
-            'rundkoersel_brudt',
-            'niveau'
+            'Kommunekode',
+            'Vejkode',
+            'Vejmyndighed',
+            'Vejmidtetype',
+            'Vejklasse_BRUDT',
+            'Trafikart_BRUDT',
+            'Overflade_BRUDT',
+            'Plads_BRUDT',
+            'Fiktiv_BRUDT',
+            'Tilogfrakoer_BRUDT',
+            'Rundkoersel_BRUDT',
+            'Niveau_BRUDT'
         ],
         maxdist=10.0,
         segmentize=5.0
@@ -176,27 +176,33 @@ update_rules.add_rule(
         'Unchanged rail attribs',
         feature_type=fot.featuretype.JERNBANE_BRUDT,
         unchangedattributes=[
-                'ejer_jernbane',
-                'sportype',
+                'Ejer_Jernbane',
+                'Sportype',
         ],
         maxdist=10.0,
         segmentize=5.0,
     )
 )
 
-pipe_no_touch_attributes=['Ejer_vandloebsmidte',
-                                    'Fra_dato_fot',
-                                    'Geometri_status',
-                                    'Hovedforloeb',
-                                    'Midtbredde_brudt',
-                                    'ModerFOTID',
-                                    'ModerFOTversion',
-                                    'Netvaerk',
-                                    'Objekt_status',
-                                    'Startknude_Vandloebsmidte',
-                                    'Slutknude_vandloebsmidte',
-                                    'Synlig_Vandloebsmidte',
-                                    'Vandloebstype']
+pipe_no_touch_attributes=[
+    'Ejer_Vandloebsmidte',
+    'Fra_dato_FOT',
+    'Geometri_status',
+    'Hovedforloeb',
+    'Midtebredde_BRUDT',
+    'ModerFOTID',
+    'ModerFOTversion',
+    'Netvaerk',
+    'Objekt_status',
+    'Retning',
+    'Slut',
+    'Slutknude_Vandloebsmidte',
+    'Start',
+    'Startknude_Vandloebsmidte',
+    'Synlig_Vandloebsmidte_BRUDT',
+    'Til_dato_FOT'
+    'Vandloebstype'
+]
 update_rules.add_rule(
     'Stream centrelines',
     PipeRule(
