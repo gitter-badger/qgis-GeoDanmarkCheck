@@ -197,7 +197,7 @@ class GeoDanmarkChecker:
                 os.path.dirname(after_file),
                 'check_{0}_{1}.sqlite'.format(
                     os.path.splitext(os.path.basename(after_file))[0], # Filename without extension
-                    datetime.datetime.now().strftime("%Y%m%d_%H%M")
+                    datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 )
             )
             reporter = Reporter(output_file)
