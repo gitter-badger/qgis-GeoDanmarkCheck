@@ -163,7 +163,7 @@ update_rules.add_rule(
             'Fiktiv_BRUDT',
             'Tilogfrakoer_BRUDT',
             'Rundkoersel_BRUDT',
-            'Niveau_BRUDT'
+            #'Niveau_BRUDT'
         ],
         maxdist=10.0,
         segmentize=5.0
@@ -194,13 +194,10 @@ pipe_no_touch_attributes=[
     'ModerFOTversion',
     'Netvaerk',
     'Objekt_status',
-    'Retning',
-    'Slut',
     'Slutknude_Vandloebsmidte',
-    'Start',
     'Startknude_Vandloebsmidte',
     'Synlig_Vandloebsmidte_BRUDT',
-    'Til_dato_FOT'
+    'Til_dato_FOT',
     'Vandloebstype'
 ]
 update_rules.add_rule(
