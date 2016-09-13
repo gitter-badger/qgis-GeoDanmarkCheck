@@ -31,6 +31,7 @@ from PyQt4.QtGui import (
     QAction,
     QIcon
 )
+from PyQt4.QtGui import QMessageBox
 from qgis.core import (
     QgsMapLayerRegistry,
     QgsDataSourceURI,
@@ -177,7 +178,10 @@ class GeoDanmarkChecker:
             else:
                 print('Unable to add layer: {}'.format(table))
 
-
+    def isGdal2(self):
+        import osgeo.gdal
+        v = osgeo.gdal.VersionInfo()
+        return v.startswith('2')
 
     def run(self):
         """Run method that performs all the real work"""
@@ -192,6 +196,14 @@ class GeoDanmarkChecker:
             if not before_file or not after_file:
                 # TODO: error handling if no before/after file
                 pass
+            if before_file.endswith('gml') or after_file.endswith('gml'):
+                if not self.isGdal2():
+                    QMessageBox.information(
+                        None,
+                        'Wrong GDAL version',
+                        'Parsing GeoDanmark GML files does not work well with your version of GDAL. ' +
+                        'Install QGIS with a GDAL version >= 2.0')
+                    return
 
             output_file = os.path.join(
                 os.path.dirname(after_file),
