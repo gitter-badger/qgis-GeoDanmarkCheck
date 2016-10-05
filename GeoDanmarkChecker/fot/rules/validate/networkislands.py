@@ -57,7 +57,12 @@ class NetworkIslands(DatasetRule):
         for component in graph.connected_components():
             if len(component.nodes) < self.minnodes or component.cost_sum() < self.minsumcost:
                 geom = self._polygon_outline(component, builder)
-                errorreporter.error(self.name, ','.join(map(str, self.feature_types)), "Network island", geom)
+                feature_info = ','.join(map(str, self.feature_types))
+                errorreporter.error(
+                    self.name,
+                    feature_info,
+                    "{0} network island".format(feature_info),
+                    geom)
 
 
     def _convex_hull(self, graph, builder):
