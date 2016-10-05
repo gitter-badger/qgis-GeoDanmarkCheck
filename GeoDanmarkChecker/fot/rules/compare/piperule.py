@@ -92,5 +92,5 @@ class PipeRule(CompareRule):
                 except KeyError as e:
                     messages.append(u'Attribute {0} not found'.format(attrib))
             if messages:
-                message = 'Piped stream changed ({})'.format(';'.join(messages))
+                message = u'Piped stream changed ({})'.format(u';'.join(messages))
                 errorreporter.error(self.name, self.featuretype, message, fgeom)
