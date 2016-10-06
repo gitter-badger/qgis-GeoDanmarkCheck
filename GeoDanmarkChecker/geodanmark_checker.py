@@ -150,19 +150,16 @@ class GeoDanmarkChecker:
             )
             self.iface.removeToolBarIcon(action)
 
-    def add_spatialite_layer(self, sqlite):
-        """ Adds an sqlite database as layers, expects layers: linestring,
-        point and polygon. """
+    def add_error_layer(self, dbfile):
+        """ Adds an database as layers, expects layers: error_point,
+        error_linestring and error_polygon. """
 
         tables = ['error_point', 'error_linestring', 'error_polygon']
-        group_name = os.path.splitext(os.path.basename(sqlite))[0]
+        group_name = os.path.splitext(os.path.basename(dbfile))[0]
         legend_group = QgsProject.instance().layerTreeRoot().insertGroup(0, group_name)
         for table in tables:
-            uri = QgsDataSourceURI()
-            uri.setDatabase(sqlite)
-            uri.setDataSource('', table, 'GEOMETRY')
             # Create new layer
-            layer = QgsVectorLayer(uri.uri(), table, 'spatialite')
+            layer = QgsVectorLayer(dbfile + '|layername=' + table, table, 'ogr')
             if not layer:
                 print('error creating layer')
             # Set encoding on the layer
@@ -207,7 +204,7 @@ class GeoDanmarkChecker:
 
             output_file = os.path.join(
                 os.path.dirname(after_file),
-                'check_{0}_{1}.sqlite'.format(
+                'check_{0}_{1}.gpkg'.format(
                     os.path.splitext(os.path.basename(after_file))[0], # Filename without extension
                     datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 )
@@ -222,6 +219,6 @@ class GeoDanmarkChecker:
                 Repository(after_file)
             )
             exe.execute(rules, reporter, progress)
-            self.add_spatialite_layer(output_file)
+            self.add_error_layer(output_file)
             # clean up the progress widgets
             self.iface.messageBar().clearWidgets()

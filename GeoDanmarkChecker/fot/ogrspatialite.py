@@ -24,11 +24,16 @@ from osgeo import osr
 
 class OGRSPatialite(object):
     def __init__(self, path):
+        ogr.UseExceptions()
         self.path = path
         self.layers = {}
-        self.driver = ogr.GetDriverByName("SQLite")
+        self.drivername = None
+        self.driver = None
+        self.options = []
+        self.layeroptions = []
+        self.datasource = None
         self._create_data_source()
-        ogr.UseExceptions()
+
 
     def __str__(self):
         return '{}'.format(self.path)
@@ -44,10 +49,11 @@ class OGRSPatialite(object):
         """
         _srs = osr.SpatialReference()
         _srs.ImportFromEPSG(srs)
-        layer = self.data_source.CreateLayer(
+        layer = self.datasource.CreateLayer(
             layer_name,
             _srs,
-            type
+            type,
+            options=self.layeroptions
         )
         for field in fields:
             field_definition = ogr.FieldDefn(field[0], field[1])
@@ -81,21 +87,28 @@ class OGRSPatialite(object):
         feature.Destroy()
 
     def _create_data_source(self):
-        """" Creates a spatialite database on disk.
+        """"
+        Creates a database on disk. Depending on file extension either a spatialite (.sqlite) or
+        a GeoPackage (.gpkg) is created
 
         Raises:
             RuntimeError: in case a database is already on disk or if ogr fails
         """
+        if self.path.lower().endswith('gpkg'):
+            self.drivename = 'GPKG'
+            self.options = []
+        elif self.path.lower().endswith('sqlite'):
+            self.drivename = 'SQLite'
+            self.options = [
+                'SPATIALITE=YES',
+                'INIT_WITH_EPSG=YES',
+                'OGR_SQLITE_SYNCHRONOUS=OFF']
+
+
         if os.path.isfile(self.path) or os.path.isdir(self.path):
             raise RuntimeError('File already found on disk.')
 
-        self.data_source = self.driver.CreateDataSource(
-            self.path,
-            options=[
-                'SPATIALITE=YES',
-                'INIT_WITH_EPSG=YES',
-                'OGR_SQLITE_SYNCHRONOUS=OFF'
-            ]
-        )
-        if self.data_source is None:
+        self.driver = ogr.GetDriverByName(self.drivename)
+        self.datasource = self.driver.CreateDataSource(self.path, options=self.options)
+        if self.datasource is None:
             raise RuntimeError('Unknown error in ogr CreateDataSource.')
