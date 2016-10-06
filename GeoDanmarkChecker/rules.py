@@ -115,9 +115,12 @@ single_file_rules.add_rule(
         'Road network island',
         [fot.featuretype.VEJMIDTE_BRUDT],
         minlength=500,
-        minnodes=10
+        minnodes=10,
+        filters=[u"Geometri_status IS NOT 'Foreløbig'"]
     )
 )
+
+# TODO: Add network island rule for vandløb hovedforløb???
 
 """
 * ***************************************************
