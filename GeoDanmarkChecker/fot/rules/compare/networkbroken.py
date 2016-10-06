@@ -104,7 +104,7 @@ class NetworkBroken(CompareRule):
                             matching_geom = segment_match.togeometry()
                             buffered = matching_geom.buffer(self.deletewithin, 8, 2, 1, 100.0)  # endCapStyle=2, joinStyle=1, mitreLimit=100.0)
                             pathgeom = pathgeom.difference(buffered)
-                        errorreporter.warn(
+                        errorreporter.warning(
                             self.name,
                             self.featuretype,
                             "{0} network possibly broken along this path".format(self.featuretype),
