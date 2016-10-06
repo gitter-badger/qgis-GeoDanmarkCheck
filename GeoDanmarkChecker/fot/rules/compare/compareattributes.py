@@ -57,7 +57,10 @@ class AttributesMustNotBeChanged(CompareRule):
                     except KeyError as e:
                         messages.append(u'Attribute {0} not found'.format(attrib))
                 if messages:
-                    errorreporter.error(self.name, self.featuretype, ';'.join(messages), m.matchgeometry)
+                    if m.exactmatch:
+                        errorreporter.error(self.name, self.featuretype, ';'.join(messages), m.matchgeometry)
+                    else:
+                        errorreporter.warning(self.name, self.featuretype, ';'.join(messages), m.matchgeometry)
             progressreporter.completed_one()
 
 
