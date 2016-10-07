@@ -20,14 +20,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .comparerule import CompareRule
 from ...repository import Repository
-from ...geomutils import FeatureIndex, geometryequal, shortestline, changedattributes
-from ...geomutils.errorgeometry import createlinemarker
-from ...geomutils.featurematcher import MatchFinder
+from ...geomutils import FeatureIndex, geometryequal, changedattributes
+from ...geomutils.errorgeometry import createlinemarker, createpointmarker
+from ...geomutils.featurematcher import MatchFinder, ExactGeometryMatcher
 
 
 class PreliminaryObjectsRule(CompareRule):
 
-    def __init__(self, name, feature_type, ispreliminaryfunction, nearbymatcher):
+    def __init__(self, name, feature_type, ispreliminaryfunction, nearbymatcher, sameobjectmatcher):
+        """
+
+        :param name:
+        :param feature_type:
+        :param ispreliminaryfunction:
+        :param nearbymatcher: Features returned here are 'close' to the prelim feature
+        :param sameobjectmatcher: Features returned here 'replaces' the prelim feature
+        """
         super(PreliminaryObjectsRule, self).__init__(name)
         self.featuretype = feature_type
         self.idcolumn = self.featuretype.id_attribute
@@ -36,6 +44,7 @@ class PreliminaryObjectsRule(CompareRule):
             raise TypeError("ispreliminary function must be a function")
         self.ispreliminary = ispreliminaryfunction
         self.nearbymatcher = nearbymatcher
+        self.sameobjectmatcher = sameobjectmatcher
 
     def execute(self, beforerepo, afterrepo, errorreporter, progressreporter):
         if not isinstance(beforerepo, Repository):
@@ -50,69 +59,111 @@ class PreliminaryObjectsRule(CompareRule):
 
         progressreporter.begintask(self.name, len(preliminary_objects))
 
-        beforeindex = FeatureIndex(beforefeats, usespatialindex=False, indexedattributes=[self.idcolumn])
-        afterindex = FeatureIndex(afterfeats, usespatialindex=False, indexedattributes=[self.idcolumn])
-        nearbyfinder = MatchFinder(afterfeats)
+        afterindex = FeatureIndex(afterfeats, usespatialindex=True, indexedattributes=[self.idcolumn])
+
+        before_finder = MatchFinder(beforefeats)
+        after_finder = MatchFinder(afterfeats)
+
+        exactgeommatcher = ExactGeometryMatcher()
 
         for f in preliminary_objects:
-            progressreporter.completed_one() # At the beginning because of the continues
-
+            # Try to find the preliminary object in the 'after' dataset
+            prelim_after = None
             fot_id = f[self.idcolumn]
-            prelim_after = afterindex.attributeequals(self.idcolumn, fot_id)
+            fot_id_matches = afterindex.attributeequals(self.idcolumn, fot_id)
+            if fot_id_matches:
+                prelim_after = fot_id_matches[0]
+            else:
+                # No match on ID - try exact match on geometry. IDs may be screwed up
+                m = after_finder.findmatching(f, exactgeommatcher)
+                if m:
+                    prelim_after = m[0].feature2
 
-            # Does the prelim object exist in the "after" dataset
-            isdeleted = len(prelim_after) == 0
+            # Find nearby objects of same type and geomstatus final
+            nearby = after_finder.findmatching(f, self.nearbymatcher)
+            # Sort by distance
+            nearby = sorted(nearby, key=lambda m: m.matchscore)
+            # Check if one of the (final) nearby objects is newly registered
+            nearby_final = [m.feature2 for m in nearby if not self.ispreliminary(m.feature2)]
+            nearby_edited_final_objects = []
+            for matching_feature in nearby_final:
+                # We are only interested in the nearest object which has been touched by the editor
+                # The only way to figure out if the nearby object is newly registered is to do an exact geom match
+                # against the 'before' situation.
+                # match geom exactly against 'before'
+                if not before_finder.findmatching(matching_feature, exactgeommatcher):
+                    # This feature did not exist in the 'before' case. It has been touches by the editor
+                    nearby_edited_final_objects.append(matching_feature)
 
-            # Is it still preliminiary
-            if not isdeleted:
-                if self.ispreliminary(prelim_after[0]):
-                    # was anything changed?
-                    if not geometryequal(f, prelim_after[0]):
-                        errorreporter.error(
-                            self.name,
-                            self.featuretype,
-                            'Preliminary object ({0}="{1}") geometry changed but still preliminary'.format(self.idcolumn, fot_id),
-                            f)
-                    changed_attributes = changedattributes(f, prelim_after[0])
+
+            if prelim_after is not None:
+                # The prelim object still exists
+                if not self.ispreliminary(prelim_after):
+                    # The object has been upgraded to final - all is good
+                    pass
+                else:
+                    # It is still preliminary
+                    changes = []
+                    if not geometryequal(f, prelim_after):
+                        changes.append('geometry changed')
+                    changed_attributes = changedattributes(f, prelim_after)
                     if changed_attributes:
+                        changes.append('attributes changed')
+                    if changes:
+                        # Something was changed - ERROR
+                        message = 'Preliminary object ({0}="{1}") {2} but still preliminary'
+                        message = message.format(self.idcolumn, fot_id,' and '.join(changes))
+                        errorreporter.error( self.name, self.featuretype, message, f)
+                    else:
+                        # Preliminary object has not been changed at all
+                        if len(nearby_edited_final_objects) == 0:
+                            # Preliminary object hasnt been touched and no objects have been edited nearby - all good
+                            pass
+                        else:
+                            # There is at least one final object nearby which has been edited
+                            errorreporter.warning(
+                                self.name,
+                                self.featuretype,
+                                'Preliminary object ({0}="{1}") not updated but new object registered nearby'.format(
+                                    self.idcolumn, fot_id),
+                                createlinemarker(f, nearby_edited_final_objects[0]))
+            else:
+                # The prelim object does not exist any more. It has been deleted (or geom changed and lost its ID)
+                if len(nearby_edited_final_objects) == 0:
+                    # No new object has replaced the prelim
+                    errorreporter.error(
+                        self.name,
+                        self.featuretype,
+                        'Preliminary object ({0}="{1}") deleted but no new object registered'.format(
+                            self.idcolumn, fot_id),
+                        f
+                    )
+                else:
+                    # Prelim has been deleted and there IS at least one new object nearby
+                    replacements_finder = MatchFinder(nearby_edited_final_objects)
+                    # Features which are 'equal enough' to replace the prelim
+                    replacement_objects = replacements_finder.findmatching(f, self.sameobjectmatcher)
+
+                    if replacement_objects:
+                        # At least one of the new objects replaces the prelim object. All is good
+                        pass
+                    else:
+                        # None of the new objects replace the prelim object
                         errorreporter.error(
                             self.name,
                             self.featuretype,
-                            'Preliminary object ({0}="{1}") attributes changed but still preliminary'
-                                .format(self.idcolumn, fot_id),
-                            f)
+                            'Preliminary object ({0}="{1}") deleted but no new object registered'.format(
+                                self.idcolumn, fot_id),
+                            f
+                        )
+            # Done checking this feature
+            progressreporter.completed_one()
 
-            # Are there any objects of the same type "nearby"
-            nearby = nearbyfinder.findmatching(f, self.nearbymatcher)
 
-            # Check if one of the nearby objects is newly registered
-            new_object = None
-            for match in nearby:
-                # Is idcolumn==None => object is new
-                matching_feature = match.feature2
-                if matching_feature[self.idcolumn] is None:
-                    new_object = matching_feature
-                    break
-                # Is idcolumn not found in the before dataset
-                sameids = beforeindex.attributeequals(self.idcolumn, matching_feature[self.idcolumn])
-                if len(sameids) == 0:
-                    new_object = matching_feature
-                    break
 
-            if isdeleted and not new_object:
-                errorreporter.error(
-                    self.name,
-                    self.featuretype,
-                    'Preliminary object ({0}="{1}") deleted without new object registered'.format(self.idcolumn, fot_id),
-                    f)
-                continue
 
-            if new_object and not isdeleted:
-                errorreporter.warning(
-                    self.name,
-                    self.featuretype,
-                    'Preliminary object ({0}="{1}") not deleted but new object registered'.format(self.idcolumn, fot_id),
-                    createlinemarker(f, new_object))
+
+
 
 
 

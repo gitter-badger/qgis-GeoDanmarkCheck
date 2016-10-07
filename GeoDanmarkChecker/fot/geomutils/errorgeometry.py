@@ -1,4 +1,4 @@
-from . import togeometry, extractassingle, shortestline, tocoordinates
+from . import togeometry, extractassingle, shortestline, toflatcoordinates
 from qgis.core import QGis, QgsGeometry
 from math import sqrt
 
@@ -48,3 +48,9 @@ def createlinemarker(f0, f1):
     p1 = linemarkerpoint(g1, g0)
     return QgsGeometry.fromPolyline([p0.asPoint(), p1.asPoint()])
 
+def createpointmarker(f):
+    g = togeometry(f)
+    coords = toflatcoordinates(g)
+    # Dont take first or last. Lines are often connected at first or last making it hard to discern
+    ix = min(1, len(coords) - 1)
+    return QgsGeometry.fromPoint(coords[ix])

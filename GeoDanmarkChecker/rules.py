@@ -43,7 +43,7 @@ from fot.rules.validate.singlelayer import UniqueAttributeValue
 from fot.rules.validate.singlelayer import AttributeRule
 from fot.rules.compare.compareattributes import AttributesMustNotBeChanged, SegmentAttributesMustNotBeChanged
 from fot.rules.compare.preliminaryobjects import PreliminaryObjectsRule
-from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher, NearbyObjectsGeometryMatcher
+from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher, NearbyObjectsGeometryMatcher, OrientedHausdorffDistanceMatcher
 from fot.rules.compare.piperule import PipeRule
 from fot.rules.validate.singlelayer.duplicategeom import DuplicateLineStringLayerGeometries
 from fot.rules.validate.networkislands import NetworkIslands
@@ -134,9 +134,12 @@ for t in fot.featuretype.featuretypes:
             name=t.name + ' preliminary objects',
             feature_type=t,
             ispreliminaryfunction=lambda feature: feature['Geometri_status'] == u'Foreløbig',
-            nearbymatcher=NearbyObjectsGeometryMatcher(distancewithin=5.0)
+            nearbymatcher=NearbyObjectsGeometryMatcher(distancewithin=20.0),
+            sameobjectmatcher=OrientedHausdorffDistanceMatcher(maxorientedhausdorffdistance=5.0)
         )
     )
+
+# TODO: If building changed a lot then UUID must not be transferred
 
 update_rules.add_rule(
     'Building UUID',

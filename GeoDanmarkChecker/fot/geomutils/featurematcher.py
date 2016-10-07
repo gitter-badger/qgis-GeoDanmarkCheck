@@ -19,6 +19,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from . import FeatureIndex, togeometry, geometryequal, extractlinestrings, shortestline, discretehausdorffdistance
+from .algorithms import orienteddistance
 from qgis.core import QgsGeometry
 
 # Classes which finds matching features in another collection of features
@@ -199,7 +200,31 @@ class ApproximateLineMatcher(ExactGeometryMatcher):
         return None
 
 
+class OrientedHausdorffDistanceMatcher(ExactGeometryMatcher):
 
+    def __init__(self, maxorientedhausdorffdistance, **kwargs):
+        super(OrientedHausdorffDistanceMatcher, self).__init__(**kwargs)
+        self.maxorientedhausdorffdistance = float(maxorientedhausdorffdistance)
+        self.bboxexpansion = self.maxorientedhausdorffdistance
+
+    def match(self, preparedfeature, otherfeature):
+        # If exact match - return that
+        m = self.matchesexactly(preparedfeature, otherfeature)
+        if m:
+            return m
+
+        othergeom = togeometry(otherfeature)
+
+        distance, frompoint, topoint = orienteddistance(preparedfeature.geom, othergeom)
+
+        if distance <= self.maxorientedhausdorffdistance:
+            line = QgsGeometry.fromPolyline([frompoint, topoint])
+            return FeatureMatch(
+                preparedfeature.feature,
+                otherfeature,
+                matchgeom=line,
+                exactmatch=False,
+                matchscore=distance)
 
 
 
