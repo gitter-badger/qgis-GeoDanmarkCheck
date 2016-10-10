@@ -144,8 +144,6 @@ class PreliminaryObjectsRule(CompareRule):
                     # Features which are 'equal enough' to replace the prelim
                     replacement_objects = replacements_finder.findmatching(f, self.sameobjectmatcher)
 
-                    # TODO: Loop over all coords of f. If we have a valid replacement within X meters of each. All is good
-
                     if replacement_objects:
                         # At least one of the new objects replaces the prelim object. All is good
                         pass
