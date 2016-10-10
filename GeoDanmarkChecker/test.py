@@ -25,6 +25,7 @@ from fot.rules.validate.singlelayer import AttributeRule
 from fot.rules.compare.compareattributes import AttributesMustNotBeChanged, SegmentAttributesMustNotBeChanged
 from fot.rules.compare.preliminaryobjects import PreliminaryObjectsRule
 from fot.rules.compare.piperule import PipeRule
+from fot.rules.compare.networkbroken import NetworkBroken
 from fot.repository import Repository
 from fot.consolereporter import ConsoleReporter
 from fot.progress import ProgressReporter
@@ -38,16 +39,18 @@ rules = []
 # Get rules from rules.py
 from rules import single_file_rules, update_rules
 for cat, lst in single_file_rules.rules.iteritems():
-    if cat == 'Building UUID':
-       #rules += lst
-        rules += [r for r in lst if isinstance(r, UniqueAttributeValue)]
+    pass
+    #if cat == 'Road network':
+        #rules += lst
+        #rules += [r for r in lst if r.name == 'Road network island' ]
     #rules += lst
 
 for cat, lst in update_rules.rules.iteritems():
-    if cat == 'Building UUID':
-       #rules += lst
-        rules += [r for r in lst if isinstance(r, UniqueAttributeValue)]
+    if cat == 'Preliminary':
+        rules += lst
+    #rules += [r for r in lst if r.name == 'VEJMIDTE_BRUDT preliminary objects'] #isinstance(r, NetworkBroken)]
     #rules += lst
+    pass
 
 with fot.qgisapp.QgisStandaloneApp(True) as app:
     print "App initialised"
@@ -60,7 +63,7 @@ with fot.qgisapp.QgisStandaloneApp(True) as app:
         ),
         'testdata'
     )
-    outfile = os.path.join(testdata_dir, 'output.sqlite')
+    outfile = os.path.join(testdata_dir, 'output.gpkg')
     if os.path.isfile(outfile):
         os.remove(outfile)
     # gml_file = os.path.join(testdata_dir, '607_Fredericia_fot5_fra_prod.gml')
@@ -68,7 +71,17 @@ with fot.qgisapp.QgisStandaloneApp(True) as app:
     reporter = Reporter(outfile)
     #reporter = ConsoleReporter('log')
     progress = ProgressReporter()
-    before = Repository(os.path.join(testdata_dir, 'original_fil.gml'))
-    after = Repository(os.path.join(testdata_dir, 'producentfil_med_fejl.gml'))
+    before = Repository(os.path.join(testdata_dir, '0787_Thisted_original.sqlite'))
+    after = Repository(os.path.join(testdata_dir, '0787_Thisted_edited.sqlite'))
     exe = RuleExecutor(before, after)
     exe.execute(rules, reporter, progress)
+    del exe
+    del after
+    del before
+    del progress
+    del reporter
+
+print 'Done! Waiting 5secs'
+import time
+time.sleep(5)
+print 'Really done :-)'
