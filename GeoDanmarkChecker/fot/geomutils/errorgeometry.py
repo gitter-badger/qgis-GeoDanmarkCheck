@@ -37,7 +37,11 @@ def linemarkerpoint(g, fromgeom=None):
         return g.interpolate(length * 0.5)
     elif g.type() == QGis.Polygon:
         if fromgeom:
-            return g.buffer(-1 * MARKER_SHRINK_SIZE, 8).nearestPoint(fromgeom)
+            buf = g.buffer(-1 * MARKER_SHRINK_SIZE, 8)
+            if not buf.isGeosEmpty():
+                return buf.nearestPoint(fromgeom)
+            else:
+                return g.pointOnSurface()
         else:
             return g.pointOnSurface()
 
@@ -46,8 +50,8 @@ def createlinemarker(f0, f1):
     g1 = togeometry(f1)
     p0 = linemarkerpoint(g0, g1)
     p1 = linemarkerpoint(g1, g0)
-    return QgsGeometry.fromPolyline([p0.asPoint(), p1.asPoint()])
-
+    geom = QgsGeometry.fromPolyline([p0.asPoint(), p1.asPoint()])
+    return geom
 def createpointmarker(f):
     g = togeometry(f)
     coords = toflatcoordinates(g)
