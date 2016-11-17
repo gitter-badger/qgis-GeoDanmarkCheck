@@ -64,12 +64,10 @@ class MatchingGeometrySameDirection(CompareRule):
                 # Remove from changed if exists (Duplicate geometries forces us to use this check)
                 if match.feature2 in changed_before_features:
                     changed_before_features.remove(match.feature2)
-            if not match_found:
-                changed_after_features.append(f)
+            if match_found: continue
             # check on reversed geom
             reversed_geom = QgsGeometry.fromPolyline(list(reversed(f.geometry().asPolyline())))
             matches = finder.findmatching(reversed_geom, exact_matcher)
-            match_found = False
             for match in matches:
                 match_found = True
                 self._check(errorreporter, match.feature2, f, f, False, False)
@@ -87,6 +85,7 @@ class MatchingGeometrySameDirection(CompareRule):
             for sm in segmentmatchfinder.findmatching(f, maxdistance=self.maxdist):
                 f2 = sm.nearestfeature
                 self._check(errorreporter, f2, f, sm.togeometry(), sm.sameDirection(), True)
+            progressreporter.completed_one()
 
     # check for exact geometry matches - should have same dir
     def _check(self, errorreporter, fbefore, fafter, geom, same_direction, is_segment):
