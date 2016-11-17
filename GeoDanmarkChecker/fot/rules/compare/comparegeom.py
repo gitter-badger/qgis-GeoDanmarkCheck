@@ -23,7 +23,7 @@ from ... import Repository
 from ... import FeatureType
 from ...geomutils.featurematcher import MatchFinder, ExactGeometryMatcher
 from ...geomutils.segmentmatcher import SegmentMatchFinder
-from qgis.core import QgsPoint, QgsFeature, QgsGeometry, QGis
+from qgis.core import QgsGeometry
 
 
 class MatchingGeometrySameDirection(CompareRule):
@@ -51,28 +51,28 @@ class MatchingGeometrySameDirection(CompareRule):
 
         progressreporter.begintask(self.name, len(afterfeats))
 
-        exactMatcher = ExactGeometryMatcher()
+        exact_matcher = ExactGeometryMatcher()
 
-        # Find exact (reversed)geometry matches
+        # Find exact geometry matches
         finder = MatchFinder(beforefeats)
         for f in afterfeats:
-            matches = finder.findmatching(f, exactMatcher)
+            matches = finder.findmatching(f, exact_matcher)
             match_found = False
             for match in matches:
                 match_found = True
-                self._check(errorreporter, match.feature2, f, f)
+                self._check(errorreporter, match.feature2, f, f, True, False)
                 # Remove from changed if exists (Duplicate geometries forces us to use this check)
                 if match.feature2 in changed_before_features:
                     changed_before_features.remove(match.feature2)
             if not match_found:
                 changed_after_features.append(f)
             # check on reversed geom
-            reversedGeom = QgsGeometry.fromPolyline(list(reversed(f.geometry().asPolyline())))
-            matches = finder.findmatching(reversedGeom, exactMatcher)
+            reversed_geom = QgsGeometry.fromPolyline(list(reversed(f.geometry().asPolyline())))
+            matches = finder.findmatching(reversed_geom, exact_matcher)
             match_found = False
             for match in matches:
                 match_found = True
-                self._check2(errorreporter, match.feature2, f, f)
+                self._check(errorreporter, match.feature2, f, f, False, False)
                 # Remove from changed if exists (Duplicate geometries forces us to use this check)
                 if match.feature2 in changed_before_features:
                     changed_before_features.remove(match.feature2)
@@ -80,42 +80,29 @@ class MatchingGeometrySameDirection(CompareRule):
                 changed_after_features.append(f)
             progressreporter.completed_one()
 
-        # Compare nonexact (reversed)geometry matches
-        # TODO: does not work as SegmentMatchFinder does not care about direction
-        # progressreporter.begintask(self.name, len(changed_after_features))
-        # segmentmatchfinder = SegmentMatchFinder(changed_before_features, segmentize=self.segmentize)
-        # for f in changed_after_features:
-        #     for sm in segmentmatchfinder.findmatching(f, maxdistance=self.maxdist):
-        #         f2 = sm.nearestfeature
-        #         self._check(errorreporter, f2, f, sm.togeometry())
-        #     # check on reversed geom
-        #     reversedGeom = QgsGeometry.fromPolyline(list(reversed(QgsGeometry(f.geometry()).asPolyline())))
-        #     for sm in segmentmatchfinder.findmatching(reversedGeom, maxdistance=self.maxdist):
-        #         f2 = sm.nearestfeature
-        #         self._check2(errorreporter, f2, f, sm.togeometry())
-        #     progressreporter.completed_one()
+        # Compare nonexact geometry matches
+        progressreporter.begintask(self.name, len(changed_after_features))
+        segmentmatchfinder = SegmentMatchFinder(changed_before_features, segmentize=self.segmentize)
+        for f in changed_after_features:
+            for sm in segmentmatchfinder.findmatching(f, maxdistance=self.maxdist):
+                f2 = sm.nearestfeature
+                self._check(errorreporter, f2, f, sm.togeometry(), sm.sameDirection(), True)
 
     # check for exact geometry matches - should have same dir
-    def _check(self, errorreporter, fbefore, fafter, geom):
+    def _check(self, errorreporter, fbefore, fafter, geom, same_direction, is_segment):
         messages = []
-        beforeDir = fbefore[self.direction_attribute] if fbefore.fieldNameIndex(self.direction_attribute) != -1 else 0
-        afterDir = fafter[self.direction_attribute] if fafter.fieldNameIndex(self.direction_attribute) != -1 else 0
+        before_dir = fbefore[self.direction_attribute] if fbefore.fieldNameIndex(self.direction_attribute) != -1 else 0
+        after_dir = fafter[self.direction_attribute] if fafter.fieldNameIndex(self.direction_attribute) != -1 else 0
 
-        if beforeDir != afterDir:
-            messages.append(u'{0}: "{1}" -> "{2}"'.format(self.direction_attribute, beforeDir, afterDir))
+        direction_match = before_dir != after_dir if same_direction else before_dir == after_dir
+
+        segment_text = " segment" if is_segment else ""
+
+        if direction_match:
+            messages.append(u'{0}: "{1}" -> "{2}"'.format(self.direction_attribute, before_dir, after_dir))
         if messages:
-            message = "Geometry match, attribute changed: " + '; '.join(messages)
-            errorreporter.error(self.name, self.featuretype, message, geom)
-
-    # check for exact reverse geometry matches - should have opposite dir
-    def _check2(self, errorreporter, fbefore, fafter, geom):
-        messages = []
-        beforeDir = fbefore[self.direction_attribute] if fbefore.fieldNameIndex(
-            self.direction_attribute) != -1 else 0
-        afterDir = fafter[self.direction_attribute] if fafter.fieldNameIndex(self.direction_attribute) != -1 else 0
-
-        if beforeDir == afterDir:
-            messages.append(u'{0}: "{1}" -> "{2}"'.format(self.direction_attribute, beforeDir, afterDir))
-        if messages:
-            message = "Geometry reversed match, attribute unchanged: " + '; '.join(messages)
+            if same_direction:
+                message = "Geometry" + segment_text + " match, attribute changed: " + '; '.join(messages)
+            else:
+                message = "Geometry" + segment_text + " reversed match, attribute unchanged: " + '; '.join(messages)
             errorreporter.error(self.name, self.featuretype, message, geom)

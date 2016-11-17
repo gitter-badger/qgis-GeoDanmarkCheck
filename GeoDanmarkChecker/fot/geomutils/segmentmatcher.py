@@ -30,14 +30,22 @@ class SegmentMatch(object):
         self.thisfeature = f
         self.nearestfeature = nearest_feature
         self.vertices = []
+        self.matchedpoints = []
         self.maxdistancefound = -1
 
     def togeometry(self):
         return QgsGeometry.fromPolyline(self.vertices)
 
-    def addvertex(self, point, distance):
+    def addvertex(self, point, distance, matchedpoint):
         self.vertices.append(point)
+        self.matchedpoints.append(matchedpoint)
         self.maxdistancefound = max(distance, self.maxdistancefound)
+
+    def sameDirection(self):
+        line = self.nearestfeature.geometry()
+        first_dist = line.sqrDistToVertexAt(self.matchedpoints[0], 0)
+        last_dist = line.sqrDistToVertexAt(self.matchedpoints[len(self.matchedpoints)-1], 0)
+        return first_dist < last_dist
 
 class SegmentMatchFinder(object):
     def __init__(self, matchagainstfeatures, segmentize = 0):
@@ -74,6 +82,7 @@ class SegmentMatchFinder(object):
         # Make sure we dont use distance to the same point
         segment_matches = []
         current_segmentmatch = None
+        matchedpoint = None
         for i in range(1, len(distances_per_vertex)):
             this_vertex = segcoords[i]
             prev_vertex = segcoords[i-1]
@@ -97,12 +106,13 @@ class SegmentMatchFinder(object):
                     # We found a closer feature
                     smallest_distance_sqrd = sumsqrddistance
                     smallest_distance_feature = f
+                    matchedpoint = this_point
                     # Perfekt match. Stop looking
                     if smallest_distance_sqrd == 0.0:
                         break
             # Do we have a running segmentmatch to extend?
             if current_segmentmatch and current_segmentmatch.nearestfeature == smallest_distance_feature:
-                current_segmentmatch.addvertex(this_vertex, sqrt(smallest_distance_sqrd))
+                current_segmentmatch.addvertex(this_vertex, sqrt(smallest_distance_sqrd), matchedpoint)
             else:
                 # The closes feature is not the same as in the last segment
                 if current_segmentmatch:
@@ -110,8 +120,8 @@ class SegmentMatchFinder(object):
                     current_segmentmatch = None
                 if smallest_distance_feature:
                     current_segmentmatch = SegmentMatch(feature, smallest_distance_feature)
-                    current_segmentmatch.addvertex(prev_vertex, sqrt(smallest_distance_sqrd))
-                    current_segmentmatch.addvertex(this_vertex, sqrt(smallest_distance_sqrd))
+                    current_segmentmatch.addvertex(prev_vertex, sqrt(smallest_distance_sqrd), matchedpoint)
+                    current_segmentmatch.addvertex(this_vertex, sqrt(smallest_distance_sqrd), matchedpoint)
         # Add last segmentmatch
         if current_segmentmatch:
             segment_matches.append(current_segmentmatch)
