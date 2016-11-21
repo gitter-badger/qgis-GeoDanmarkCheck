@@ -42,6 +42,7 @@ import fot.featuretype
 from fot.rules.validate.singlelayer import UniqueAttributeValue
 from fot.rules.validate.singlelayer import AttributeRule
 from fot.rules.compare.compareattributes import AttributesMustNotBeChanged, SegmentAttributesMustNotBeChanged
+from fot.rules.compare.comparegeom import MatchingGeometrySameDirection
 from fot.rules.compare.preliminaryobjects import PreliminaryObjectsRule
 from fot.geomutils.featurematcher import ApproximatePolygonMatcher, ApproximateLineMatcher, NearbyObjectsGeometryMatcher, OrientedHausdorffDistanceMatcher
 from fot.rules.compare.piperule import PipeRule
@@ -223,6 +224,18 @@ update_rules.add_rule(
         'Stream network broken',
         feature_type=fot.featuretype.VANDLOEBSMIDTE_BRUDT,
         maxcostfactor=2.0   # Error if route has become more than 2 times longer
+    )
+
+)
+
+update_rules.add_rule(
+    'Stream centrelines',
+    MatchingGeometrySameDirection(
+        'Matching geometry but opposite direction',
+        feature_type=fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+        direction_attribute='Retning',
+        maxdist=10.0,
+        segmentize=5.0
     )
 
 )
