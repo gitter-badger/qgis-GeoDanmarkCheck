@@ -10,7 +10,7 @@
 name=GeoDanmark Checker
 qgisMinimumVersion=2.0
 description=This plugin provides methods to check GeoDanmark data
-version=1.1.0
+version=1.2.0
 author=Septima
 email=asger@septima.dk
 
@@ -24,6 +24,11 @@ repository=https://github.com/Septima/qgis-GeoDanmarkCheck
 
 # Uncomment the following line and add your changelog:
 changelog=
+    2016-11-22 1.2.0
+     * Combined preliminary check for other types (#30)
+     * Island-test for vandløbsmidte (#28)
+     * Vandløbskant to be checked for preliminary (#29)
+     * Fix merge issue with fix for crash bug (#35)
     2016-11-18 1.1.0
      * Fix crash bug in check for 'Building UUID unique' (#35)
      * New checker-control: Control digitizing direction of VANDLØBSMIDTE (#34)

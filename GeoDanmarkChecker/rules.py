@@ -26,12 +26,14 @@ class RulesSet(object):
     def __init__(self, name):
         self.name = name
         self.rules = defaultdict(list)
+        self.expanded = defaultdict(list)
 
     def __len__(self):
         return len(self.rules)
 
-    def add_rule_category(self, category_name):
+    def add_rule_category(self, category_name, expanded=True):
         self.rules[category_name] = []
+        self.expanded[category_name] = expanded
 
     def add_rule(self, category_name, rule):
         self.rules[category_name].append(rule)
@@ -60,6 +62,7 @@ update_rules = RulesSet('GeoDanmark Update Rules')
 * ***************************************************
 """
 
+single_file_rules.add_rule_category('Building UUID')
 single_file_rules.add_rule(
     'Building UUID',
     UniqueAttributeValue(
@@ -70,6 +73,7 @@ single_file_rules.add_rule(
     )
 )
 
+single_file_rules.add_rule_category('Stream centrelines')
 single_file_rules.add_rule(
     'Stream centrelines',
     AttributeRule(
@@ -79,48 +83,6 @@ single_file_rules.add_rule(
         isvalidfunction=lambda val: val in [u'Almindelig', u'Gennem sø', u'Rørlagt']
     )
 )
-
-single_file_rules.add_rule(
-    'Duplicate geometry',
-    DuplicateLineStringLayerGeometries(
-        'Duplicate road centreline',
-        fot.featuretype.VEJMIDTE_BRUDT,
-        equalstolerance=0.1,
-        segmentize=5.0
-    )
-)
-
-single_file_rules.add_rule(
-    'Duplicate geometry',
-    DuplicateLineStringLayerGeometries(
-        'Duplicate railroad centreline',
-        fot.featuretype.JERNBANE_BRUDT,
-        equalstolerance=0.1,
-        segmentize=5.0
-    )
-)
-
-single_file_rules.add_rule(
-    'Duplicate geometry',
-    DuplicateLineStringLayerGeometries(
-        'Duplicate stream centreline',
-        fot.featuretype.VANDLOEBSMIDTE_BRUDT,
-        equalstolerance=0.1,
-        segmentize=5.0
-    )
-)
-
-single_file_rules.add_rule(
-    'Road network',
-    NetworkIslands(
-        'Road network island',
-        [fot.featuretype.VEJMIDTE_BRUDT],
-        minlength=500,
-        minnodes=10,
-        filters=[u"Geometri_status IS NOT 'Foreløbig'"]
-    )
-)
-
 single_file_rules.add_rule(
     'Stream centrelines',
     NetworkIslands(
@@ -132,11 +94,53 @@ single_file_rules.add_rule(
     )
 )
 
+single_file_rules.add_rule_category('Duplicate geometry')
+single_file_rules.add_rule(
+    'Duplicate geometry',
+    DuplicateLineStringLayerGeometries(
+        'Duplicate road centreline',
+        fot.featuretype.VEJMIDTE_BRUDT,
+        equalstolerance=0.1,
+        segmentize=5.0
+    )
+)
+single_file_rules.add_rule(
+    'Duplicate geometry',
+    DuplicateLineStringLayerGeometries(
+        'Duplicate railroad centreline',
+        fot.featuretype.JERNBANE_BRUDT,
+        equalstolerance=0.1,
+        segmentize=5.0
+    )
+)
+single_file_rules.add_rule(
+    'Duplicate geometry',
+    DuplicateLineStringLayerGeometries(
+        'Duplicate stream centreline',
+        fot.featuretype.VANDLOEBSMIDTE_BRUDT,
+        equalstolerance=0.1,
+        segmentize=5.0
+    )
+)
+
+single_file_rules.add_rule_category('Road network')
+single_file_rules.add_rule(
+    'Road network',
+    NetworkIslands(
+        'Road network island',
+        [fot.featuretype.VEJMIDTE_BRUDT],
+        minlength=500,
+        minnodes=10,
+        filters=[u"Geometri_status IS NOT 'Foreløbig'"]
+    )
+)
+
 """
 * ***************************************************
 *   Rules comparing two versions of the data
 * ***************************************************
 """
+update_rules.add_rule_category('Preliminary')
 for t in fot.featuretype.featuretypes:
     update_rules.add_rule(
         'Preliminary',
@@ -149,8 +153,22 @@ for t in fot.featuretype.featuretypes:
         )
     )
 
+update_rules.add_rule_category('Preliminary (others)', False)
+for t in fot.featuretype.featuretypes_others:
+    update_rules.add_rule(
+        'Preliminary (others)',
+        PreliminaryObjectsRule(
+            name=t.name + ' preliminary objects',
+            feature_type=t,
+            ispreliminaryfunction=lambda feature: feature['Geometri_status'] == u'Foreløbig',
+            nearbymatcher=NearbyObjectsGeometryMatcher(distancewithin=20.0),
+            sameobjectmatcher=OrientedHausdorffDistanceMatcher(maxorientedhausdorffdistance=5.0)
+        )
+    )
+
 # TODO: If building changed a lot then UUID must not be transferred
 
+update_rules.add_rule_category('Building UUID')
 update_rules.add_rule(
     'Building UUID',
     AttributesMustNotBeChanged(
@@ -162,6 +180,7 @@ update_rules.add_rule(
     )
 )
 
+update_rules.add_rule_category('Unchanged network attribs')
 update_rules.add_rule(
     'Unchanged network attribs',
     SegmentAttributesMustNotBeChanged(
@@ -185,7 +204,6 @@ update_rules.add_rule(
         segmentize=5.0
     )
 )
-
 update_rules.add_rule(
     'Unchanged network attribs',
     SegmentAttributesMustNotBeChanged(
@@ -216,6 +234,8 @@ pipe_no_touch_attributes = [
     'Til_dato_FOT',
     'Vandloebstype'
 ]
+
+update_rules.add_rule_category('Stream centrelines')
 update_rules.add_rule(
     'Stream centrelines',
     PipeRule(
@@ -226,7 +246,6 @@ update_rules.add_rule(
         unchangedattributes=pipe_no_touch_attributes
     )
 )
-
 update_rules.add_rule(
     'Stream centrelines',
     NetworkBroken(
@@ -236,7 +255,6 @@ update_rules.add_rule(
     )
 
 )
-
 update_rules.add_rule(
     'Stream centrelines',
     MatchingGeometrySameDirection(
@@ -249,6 +267,7 @@ update_rules.add_rule(
 
 )
 
+update_rules.add_rule_category('Road centrelines')
 update_rules.add_rule(
     'Road centrelines',
     NetworkBroken(

@@ -86,7 +86,7 @@ class RulesTreeWidget(QTreeWidget):
             self._fill_tree_recursively(base_item, rules)
             self.addTopLevelItem(base_item)
             base_item.setFirstColumnSpanned(True)
-            base_item.setExpanded(True)
+            base_item.setExpanded(self.rules_set.expanded[key])
 
     def _fill_tree_recursively(self, base_item, rules):
         """ Fills a base item with rules """

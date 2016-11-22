@@ -103,7 +103,8 @@ class FeatureIndex():
                     self.attributeindexes[a] = defaultdict(list)
                 index = self.attributeindexes[a]
                 for f in features:
-                    value = f[a]
-                    index[value].append(f)
+                    if f.fieldNameIndex(a) != -1:
+                        value = f[a]
+                        index[value].append(f)
 
 

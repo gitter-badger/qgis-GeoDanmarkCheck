@@ -69,8 +69,8 @@ class PreliminaryObjectsRule(CompareRule):
         for f in preliminary_objects:
             # Try to find the preliminary object in the 'after' dataset
             prelim_after = None
-            fot_id = f[self.idcolumn]
-            fot_id_matches = afterindex.attributeequals(self.idcolumn, fot_id)
+            fot_id = f[self.idcolumn] if f.fieldNameIndex(self.idcolumn) != -1 else None
+            fot_id_matches = afterindex.attributeequals(self.idcolumn, fot_id) if fot_id else None
             if fot_id_matches:
                 prelim_after = fot_id_matches[0]
             else:
