@@ -41,6 +41,9 @@ featuretypes.append(VINDMOELLE)
 VANDLOEBSMIDTE_BRUDT = FeatureType('VANDLOEBSMIDTE_BRUDT', 'vandloebsmidte_brudt', '')
 featuretypes.append(VANDLOEBSMIDTE_BRUDT)
 
+VANDLOEBSKANT = FeatureType('VANDLOEBSKANT', 'vandloebskant', '')
+featuretypes.append(VANDLOEBSKANT)
+
 VEJMIDTE_BRUDT = FeatureType('VEJMIDTE_BRUDT', 'vejmidte_brudt', '')
 featuretypes.append(VEJMIDTE_BRUDT)
 
