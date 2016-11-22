@@ -121,7 +121,16 @@ single_file_rules.add_rule(
     )
 )
 
-# TODO: Add network island rule for vandløb hovedforløb???
+single_file_rules.add_rule(
+    'Stream centrelines',
+    NetworkIslands(
+        'Stream centrelines network island',
+        [fot.featuretype.VANDLOEBSMIDTE_BRUDT],
+        minlength=500,
+        minnodes=10,
+        filters=[u"Geometri_status IS NOT 'Foreløbig'"]
+    )
+)
 
 """
 * ***************************************************
@@ -191,7 +200,7 @@ update_rules.add_rule(
     )
 )
 
-pipe_no_touch_attributes=[
+pipe_no_touch_attributes = [
     'Ejer_Vandloebsmidte',
     'Fra_dato_FOT',
     'Geometri_status',
