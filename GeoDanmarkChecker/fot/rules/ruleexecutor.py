@@ -17,13 +17,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-from ..repository import InvalidLayerException, Repository
+from ..repository import Repository
+from ..exceptions import FotException
 from . import Rule
 from .compare.comparerule import CompareRule
 from .validate.datasetrule import DatasetRule
 
 class RuleExecutor:
-
     def __init__(self, beforerepo, afterrepo):
         if not isinstance(beforerepo, Repository):
             raise TypeError("beforerepo is not a Repository")
@@ -46,7 +46,7 @@ class RuleExecutor:
                     r.execute(self.after, errorreporter, progressreporter)
                 else:
                     raise TypeError("Unkown rule type: " + str(r))
-            except InvalidLayerException as e:
+            except FotException as e:
                 errorreporter.error(
                     r.name, "", "Exception when processing rule {0}. Message: {1}".format(r.name, str(e)), None)
 

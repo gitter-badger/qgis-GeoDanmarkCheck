@@ -20,8 +20,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from qgis.core import QgsVectorLayer, QgsFeatureRequest, QgsRectangle
 from .featuretype import FeatureType
+from .exceptions import FotException
 
-class InvalidLayerException(Exception):
+class InvalidLayerException(FotException):
     pass
 
 class Repository(object):
