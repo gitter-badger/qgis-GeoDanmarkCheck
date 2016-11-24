@@ -20,6 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .comparerule import CompareRule
 from ...repository import Repository
+from ...exceptions import FotException
 from ...geomutils import FeatureIndex, geometryequal, changedattributes
 from ...geomutils.errorgeometry import createlinemarker, createpointmarker
 from ...geomutils.featurematcher import MatchFinder, ExactGeometryMatcher
@@ -55,7 +56,14 @@ class PreliminaryObjectsRule(CompareRule):
         beforefeats = beforerepo.read(self.featuretype)
         afterfeats = afterrepo.read(self.featuretype)
 
-        preliminary_objects = [x for x in beforefeats if self.ispreliminary(x)]
+        try:
+            preliminary_objects = [x for x in beforefeats if self.ispreliminary(x)]
+        except Exception as e:
+            import sys
+            raise FotException, \
+                  FotException("'ispreliminary' fails for {} with error message: {}".format(self.featuretype, e.message)), \
+                  sys.exc_info()[2]
+
 
         progressreporter.begintask(self.name, len(preliminary_objects))
 
