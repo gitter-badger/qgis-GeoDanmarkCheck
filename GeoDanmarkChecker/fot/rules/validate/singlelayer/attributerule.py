@@ -22,6 +22,23 @@ from .singlefeaturerule import SingleFeatureRule
 
 
 class AttributeRule(SingleFeatureRule):
+    """Apply a python function on the value of a given attribute.
+
+    Parameters
+    ----------
+    name : str
+        Name if this rule instance
+    feature_type : fot.FeatureType
+        Feature type to apply check to
+    attributename : str
+        Name of attribute which must be unique
+    isvalidfunction : function(value) returning bool
+        Function which determines whether a value is valid.
+        Like 'lambda value: value > 5'
+    filter : str
+        QGIS Filter Expression which is applied to features before evaluating this rule.
+
+    """
 
     def __init__(self, name, feature_type, attributename, isvalidfunction, filter=None):
         super(AttributeRule, self).__init__(name, feature_type, attributesneeded=[attributename], geometryneeded=True)

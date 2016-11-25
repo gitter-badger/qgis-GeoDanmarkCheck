@@ -22,6 +22,21 @@ from .singlelayerrule import SingleLayerRule
 from ....geomutils.errorgeometry import createlinemarker
 
 class UniqueAttributeValue(SingleLayerRule):
+    """Check that all values for a given attribute are unique within the features.
+
+    Parameters
+    ----------
+    name : str
+        Name if this rule instance
+    feature_type : fot.FeatureType
+        Feature type to apply check to
+    attributename : str
+        Name of attribute which must be unique
+    filter : str
+        QGIS Filter Expression which is applied to features before evaluating this rule.
+
+    """
+
     def __init__(self, name, feature_type, attributename, filter=None):
         super(UniqueAttributeValue, self).__init__(name, feature_type)
         self.filter = filter

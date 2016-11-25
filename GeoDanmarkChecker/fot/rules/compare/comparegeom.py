@@ -27,6 +27,29 @@ from qgis.core import QgsGeometry
 
 
 class MatchingGeometrySameDirection(CompareRule):
+    """Check that matching 'before' and 'after' features effectively have the same direction.
+
+    Takes both geometry direction and 'direction_attribute' into account. 'direction_attribute' has one of three
+    values {null, 0, 1}. Where 1 indicates that the direction is reversed with respect to the actual geometry.
+    If 'direction_attribute' is not present or it's value is null it is assumed to be 0.
+
+    Parameters
+    ----------
+    name : str
+        Name if this rule instance
+    feature_type : fot.FeatureType
+        Feature type to apply check to
+    direction_attribute : str
+        Attribute
+    maxdist : float
+        Maximum distance to consider geometries coincident.
+    segmentize : float or None
+        Segmentize geometry into pieces of maximum this length. If None the geometry is not segmentized.
+    beforefilter : str
+        QGIS Filter Expression which is applied to 'before' features before evaluating this rule.
+    afterfilter : str
+        QGIS Filter Expression which is applied to 'after' features before evaluating this rule.
+    """
     def __init__(self, name, feature_type, direction_attribute, maxdist, segmentize = None, beforefilter=None, afterfilter=None):
         super(MatchingGeometrySameDirection, self).__init__(name, beforefilter, afterfilter)
         if not isinstance(feature_type, FeatureType):

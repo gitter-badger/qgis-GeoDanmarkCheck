@@ -27,16 +27,26 @@ from ...geomutils.featurematcher import MatchFinder, ExactGeometryMatcher
 
 
 class PreliminaryObjectsRule(CompareRule):
+    """Check that preliminary objects in the 'before' dataset are correctly handled in the 'after' dataset.
+
+    Parameters
+    ----------
+    name : str
+        Name if this rule instance.
+    feature_type : fot.FeatureType
+        Feature type to apply check to.
+    ispreliminaryfunction : function(feature) returning bool
+        Function accepting a feature returning True if the feature is preliminary.
+    nearbymatcher : GeometryMatcher object
+        Object like fot.geomutils.featurematcher.NearbyObjectsGeometryMatcher. This defines which 'after'-features
+        are considered to be 'nearby' a preliminary 'before'-feature.
+    sameobjectmatcher : GeometryMatcher object
+        Object like fot.geomutils.featurematcher.OrientedHausdorffDistanceMatcher. This defines which 'after'-features
+        are allowed to replace a preliminary 'before'-feature.
+
+    """
 
     def __init__(self, name, feature_type, ispreliminaryfunction, nearbymatcher, sameobjectmatcher):
-        """
-
-        :param name:
-        :param feature_type:
-        :param ispreliminaryfunction:
-        :param nearbymatcher: Features returned here are 'close' to the prelim feature
-        :param sameobjectmatcher: Features returned here 'replaces' the prelim feature
-        """
         super(PreliminaryObjectsRule, self).__init__(name)
         self.featuretype = feature_type
         self.idcolumn = self.featuretype.id_attribute
@@ -63,7 +73,6 @@ class PreliminaryObjectsRule(CompareRule):
             raise FotException, \
                   FotException("'ispreliminary' fails for {} with error message: {}".format(self.featuretype, e.message)), \
                   sys.exc_info()[2]
-
 
         progressreporter.begintask(self.name, len(preliminary_objects))
 

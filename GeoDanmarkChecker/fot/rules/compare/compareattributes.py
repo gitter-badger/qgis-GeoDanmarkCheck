@@ -26,6 +26,23 @@ from ...geomutils.segmentmatcher import SegmentMatchFinder
 
 
 class AttributesMustNotBeChanged(CompareRule):
+    """Check if attributes of matching features have been changed.
+
+    Parameters
+    ----------
+    name : str
+        Name if this rule instance
+    feature_type : fot.FeatureType
+        Feature type to apply check to
+    unchangedattributes : list of str
+        List of attributes which are not allowed to change.
+    featurematcher : GeometryMatcher object
+        This defines which 'after' features matches a 'before' feature.
+    beforefilter : str
+        QGIS Filter Expression which is applied to 'before' features before evaluating this rule.
+    afterfilter : str
+        QGIS Filter Expression which is applied to 'after' features before evaluating this rule.
+    """
     def __init__(self, name, feature_type, unchangedattributes, featurematcher, beforefilter=None, afterfilter=None):
         super(AttributesMustNotBeChanged, self).__init__(name, beforefilter, afterfilter)
         if not isinstance(feature_type, FeatureType):
@@ -65,7 +82,28 @@ class AttributesMustNotBeChanged(CompareRule):
 
 
 class SegmentAttributesMustNotBeChanged(CompareRule):
-    """Matches segment by segment. Possibly on a densified geometry. Disregards anything further away than maxdist"""
+    """Check if attributes of matching features have been changed.
+
+    Matches segment by segment. Possibly on a densified geometry.
+
+    Parameters
+    ----------
+    name : str
+        Name if this rule instance
+    feature_type : fot.FeatureType
+        Feature type to apply check to
+    unchangedattributes : list of str
+        List of attributes which are not allowed to change.
+    maxdist : float
+        Maximum distance to consider geometries coincident.
+    segmentize : float or None
+        Segmentize geometry into pieces of maximum this length. If None the geometry is not segmentized.
+    beforefilter : str
+        QGIS Filter Expression which is applied to 'before' features before evaluating this rule.
+    afterfilter : str
+        QGIS Filter Expression which is applied to 'after' features before evaluating this rule.
+    """
+
     def __init__(self, name, feature_type, unchangedattributes, maxdist, segmentize = None, beforefilter=None, afterfilter=None):
         super(SegmentAttributesMustNotBeChanged, self).__init__(name, beforefilter, afterfilter)
         if not isinstance(feature_type, FeatureType):

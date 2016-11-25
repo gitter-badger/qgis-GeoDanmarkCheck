@@ -22,6 +22,26 @@ from .singlelayerrule import SingleLayerRule
 from ....geomutils.segmentmatcher import SegmentMatchFinder
 
 class DuplicateLineStringLayerGeometries(SingleLayerRule):
+    """Check for duplicate or almost coincident linestring geometry segments.
+
+    Check is done segment by segment, with the option to split segments into smaller segments before check is executed.
+
+    If a feature A is within 'equalstolerance' distance of both ends of a segment from feature B then features A and B
+    are considered to be coincident along that segment.
+
+    Parameters
+    ----------
+    name : str
+        Name if this rule instance
+    feature_type : fot.FeatureType
+        Feature type to apply check to
+    segmentize : float or None
+        Segmentize geometry into pieces of maximum this length. If None the geometry is not segmentized.
+    equalstolerance : float
+        Maximum distance to consider geometries coincident.
+    filter : str
+        QGIS Filter Expression which is applied to features before evaluating this rule.
+    """
     def __init__(self, name, feature_type, segmentize=2, equalstolerance=0.1, filter=None):
         super(DuplicateLineStringLayerGeometries, self).__init__(name, feature_type)
         self.filter = filter

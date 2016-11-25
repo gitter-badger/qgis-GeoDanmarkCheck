@@ -23,6 +23,25 @@ from ... import FeatureType, Repository
 from ...geomutils import Snap, SnapLocation, SnapFinder, togeometry, FeatureIndex, geometryequal
 
 class PipeRule(CompareRule):
+    """Check that a special subset of pipes are not illegally changed.
+
+    For 'short' pipes which are not snapped at both it is checked that the geometry is not changed and none of a subset
+    of attributes are changed.
+
+    Parameters
+    ----------
+    name : str
+        Name if this rule instance
+    feature_type : fot.FeatureType
+        Feature type to apply check to
+    ispipefunction : function(feature) returning bool
+        Function accepting a feature returning a bool indicating whether this is a pipe.
+    isshortfunction : function(feature) returning bool
+        Function accepting a feature returning a bool indicating whether this is a 'short' pipe.
+    unchangedattributes : list of str
+        List attributes which are not allowed to be changed.
+    """
+
     def __init__(self, name, feature_type, ispipefunction, isshortfunction, unchangedattributes):
         super(PipeRule, self).__init__(name, beforefilter=None, afterfilter=None)
 

@@ -27,14 +27,27 @@ from .comparerule import CompareRule
 
 
 class NetworkBroken(CompareRule):
+    """Check if changes in the network has caused routes to get longer.
+
+    When this rule detects that something has been changed in the network it will determine all nodes on the edge of the
+    edited area. The it will calculate the shortest path between all pairs of nodes in the 'before' graph and in the
+    'after' graph. If the difference between the routes exceeds a threshold a warning is raised.
+
+    Parameters
+    ----------
+    name : str
+        Name if this rule instance
+    feature_type : fot.FeatureType
+        Feature type to apply check to
+    maxcostfactor : float
+        Raise a warning if cost_after * maxcostfactor > cost_before
+    beforefilter : str
+        QGIS Filter Expression which is applied to 'before' features before evaluating this rule.
+    afterfilter : str
+        QGIS Filter Expression which is applied to 'after' features before evaluating this rule.
+    """
+
     def __init__(self, name, feature_type, maxcostfactor, beforefilter=None, afterfilter=None):
-        """
-        :param name:
-        :param feature_type:
-        :param maxcostfactor: Raises an error if cost_after * maxcostfactor > cost_before
-        :param beforefilter:
-        :param afterfilter:
-        """
         super(NetworkBroken, self).__init__(name, beforefilter, afterfilter)
         if not isinstance(feature_type, FeatureType):
             raise TypeError()

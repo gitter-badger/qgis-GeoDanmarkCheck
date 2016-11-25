@@ -24,6 +24,21 @@ from ...geomutils import tocoordinates
 from qgis.core import QgsGeometry
 
 class NetworkIslands(DatasetRule):
+    """Check for disconnected graph components. "Islands" in the network.
+
+    Parameters
+    ----------
+    name : str
+        Name if this rule instance
+    feature_types : list of fot.FeatureType
+        Featuretypes which together form the network to be checked.
+    minnodes : int
+        Minimum number of network nodes (not geometry vertices) for an island to be VALID.
+    minlength : float
+        Minimum sum of edge lengths for an island to be VALID.
+    filters : list of str
+        A QGIS Filter Expression for each of the featuretypes. Is applied to features before evaluating this rule.
+    """
 
     def __init__(self, name, feature_types, minnodes, minlength, filters=None):
         """feature_types is list of feature types
