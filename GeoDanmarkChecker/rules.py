@@ -198,7 +198,7 @@ update_rules.add_rule(
             'Fiktiv_BRUDT',
             'Tilogfrakoer_BRUDT',
             'Rundkoersel_BRUDT',
-            #'Niveau_BRUDT'
+            'Niveau_BRUDT'
         ],
         maxdist=10.0,
         segmentize=5.0

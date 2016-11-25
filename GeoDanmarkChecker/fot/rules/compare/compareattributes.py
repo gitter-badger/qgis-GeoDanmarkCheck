@@ -109,9 +109,10 @@ class SegmentAttributesMustNotBeChanged(CompareRule):
         if not isinstance(feature_type, FeatureType):
             raise TypeError()
         self.featuretype = feature_type
-        self.unchangedattributes = unchangedattributes
+        self.unchangedattributes = list(unchangedattributes)
         self.maxdist = float(maxdist)
         self.segmentize = float(segmentize) if segmentize else 0
+        self.reported_keyerrors = []
 
     def execute(self, beforerepo, afterrepo, errorreporter, progressreporter):
         if not isinstance(beforerepo, Repository):
@@ -161,7 +162,11 @@ class SegmentAttributesMustNotBeChanged(CompareRule):
                 if not fbefore[attrib] == fafter[attrib]:
                     messages.append(u'{0}: "{1}" -> "{2}"'.format(attrib, fbefore[attrib], fafter[attrib]))
             except KeyError as e:
-                messages.append(u'{0} not found'.format(attrib))
+                if not attrib in self.reported_keyerrors:
+                    messages.append(u'{0} missing'.format(attrib))
+                    errorreporter.error(self.name, self.featuretype, u'Attribute "{0}" missing'.format(attrib), None)
+                    self.unchangedattributes.remove(attrib)
+                    self.reported_keyerrors.append(attrib)
         if messages:
             message = "Attribute changed: " + '; '.join(messages)
             errorreporter.error(self.name, self.featuretype, message, geom)
