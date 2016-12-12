@@ -87,6 +87,7 @@ class GeoDanmarkChecker:
 
         # Create the dialog (after translation) and keep reference
         rules = [update_rules,single_file_rules]
+        self.progress = ProgressDialog()
         self.dlg = GeoDanmarkCheckerDialog(rules)
 
         # Declare instance attributes
@@ -210,7 +211,8 @@ class GeoDanmarkChecker:
                 )
             )
             reporter = Reporter(output_file)
-            progress = ProgressDialog(self.iface.messageBar())
+            self.progress.clear()
+            self.progress.show()
 
             rules = self.dlg.getcomparerules()
             rules += self.dlg.getvalidationrules()
@@ -218,7 +220,6 @@ class GeoDanmarkChecker:
                 Repository(before_file),
                 Repository(after_file)
             )
-            exe.execute(rules, reporter, progress)
+            exe.execute(rules, reporter, self.progress)
+            self.progress.enable_close()
             self.add_error_layer(output_file)
-            # clean up the progress widgets
-            self.iface.messageBar().clearWidgets()

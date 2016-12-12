@@ -17,35 +17,50 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import os
 from ..fot.progress import ProgressReporter
-from PyQt4.QtGui import QProgressBar, QApplication
-from PyQt4.QtCore import Qt
+from PyQt4 import uic
+from PyQt4.QtGui import (
+    QApplication,
+    QDialog,
+    QDialogButtonBox
+)
+
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(
+        os.path.dirname(__file__),
+        'progressdialog.ui'
+    )
+)
 
 
-class ProgressDialog(ProgressReporter):
-    def __init__(self, message_bar):
+class ProgressDialog(ProgressReporter, QDialog, FORM_CLASS):
+    def __init__(self):
         super(ProgressReporter, self).__init__()
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        self.progress_bar.setTextVisible(True)
-        self.progress_bar.setEnabled(True)
-        self.message_bar = message_bar
-        self.widget = None
+        self.setupUi(self)
+        self.clear()
+
+    def clear(self):
+        self.buttonBox.button(QDialogButtonBox.Close).setEnabled(False)
+        self.output_text.clear()
+
+    def enable_close(self):
+        self.buttonBox.button(QDialogButtonBox.Close).setEnabled(True)
+
+    def add_message(self, text):
+        self.output_text.appendPlainText(text)
 
     def begintask(self, taskname, tasksize):
         self.progress_bar.setRange(0, tasksize)
-
-        self.widget = self.message_bar.createMessage(
-            'Currently processing rule: ',
-            taskname
-        )
-        self.widget.layout().addWidget(self.progress_bar)
-
-        self.message_bar.pushWidget(
-            self.widget,
-            self.message_bar.INFO
-        )
+        self.add_message('Currently processing rule: ' + taskname)
         super(ProgressDialog, self).begintask(taskname, tasksize)
+
+    def completed(self, completed):
+        QApplication.processEvents()
+        super(ProgressDialog, self).completed(completed)
+
+    def completed_all(self):
+        self.add_message('Done!')
 
     def _report(self):
         self.progress_bar.setValue(self.taskcompleted)

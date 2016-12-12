@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 class ProgressReporter(object):
     def __init__(self):
         self.taskname = None
@@ -39,9 +40,14 @@ class ProgressReporter(object):
         if completed >= self._nextreportat:
             self._report()
             self._nextreportat = min(self.tasksize, completed + self.reportevery)
+        if completed == self.tasksize:
+            self.completed_all()
 
     def completed_one(self):
         self.completed(self.taskcompleted + 1)
+
+    def completed_all(self):
+        pass
 
     def _report(self):
         # Better ways of reporting!
