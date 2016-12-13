@@ -42,7 +42,7 @@ import resources
 # Import the code for the dialog
 from .ui.geodanmark_checker_dialog import GeoDanmarkCheckerDialog
 from .rules import single_file_rules, update_rules
-from fot.reporter import Reporter
+from fot.reporter import Reporter, CascadingReporter
 # from fot.progress import ProgressReporter
 from .ui.progressdialog import ProgressDialog
 from fot.repository import Repository
@@ -210,7 +210,9 @@ class GeoDanmarkChecker:
                     datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 )
             )
-            reporter = Reporter(output_file)
+            file_reporter = Reporter(output_file)
+            cascading_reporter = CascadingReporter([file_reporter, self.progress])
+
             self.progress.clear()
             self.progress.show()
 
@@ -220,6 +222,6 @@ class GeoDanmarkChecker:
                 Repository(before_file),
                 Repository(after_file)
             )
-            exe.execute(rules, reporter, self.progress)
+            exe.execute(rules, cascading_reporter, self.progress)
             self.progress.enable_close()
             self.add_error_layer(output_file)

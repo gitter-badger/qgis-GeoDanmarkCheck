@@ -121,3 +121,20 @@ class Reporter(object):
             ogr.wkbNone,
             fields
         )
+
+
+class CascadingReporter(object):
+    def __init__(self, reporters):
+        self.reporters = list(reporters)
+
+    def error(self, rulename, typeinfo, message, geometry):
+        for r in self.reporters:
+            r.error(rulename, typeinfo, message, geometry)
+
+    def warning(self, rulename, typeinfo, message, geometry):
+        for r in self.reporters:
+            r.warning(rulename, typeinfo, message, geometry)
+
+    def report(self, rulename, typeinfo, message, geometry, level):
+        for r in self.reporters:
+            r.report(rulename, typeinfo, message, geometry, level)
