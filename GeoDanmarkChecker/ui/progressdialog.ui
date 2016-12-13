@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>755</width>
-    <height>493</height>
+    <height>627</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,6 +20,9 @@
    <bool>true</bool>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTableWidget" name="tableWidget"/>
+   </item>
    <item>
     <widget class="QPlainTextEdit" name="output_text">
      <property name="undoRedoEnabled">

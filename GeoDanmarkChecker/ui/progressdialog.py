@@ -23,7 +23,9 @@ from PyQt4 import uic
 from PyQt4.QtGui import (
     QApplication,
     QDialog,
-    QDialogButtonBox
+    QDialogButtonBox,
+    QProgressBar,
+    QTableWidgetItem
 )
 
 FORM_CLASS, _ = uic.loadUiType(
@@ -38,11 +40,25 @@ class ProgressDialog(ProgressReporter, QDialog, FORM_CLASS):
     def __init__(self):
         super(ProgressReporter, self).__init__()
         self.setupUi(self)
+        self.tableWidget.setColumnCount(3)
+        item = QTableWidgetItem()
+        item.setText('Rule')
+        self.tableWidget.setHorizontalHeaderItem(0, item)
+        item = QTableWidgetItem()
+        item.setText('Progress')
+        self.tableWidget.setHorizontalHeaderItem(1, item)
+        item = QTableWidgetItem()
+        item.setText('Incidents')
+        self.tableWidget.setHorizontalHeaderItem(2, item)
+        self._currentTaskName = None
+        self._currentTaskProgressBar = None
+
         self.clear()
 
     def clear(self):
         self.buttonBox.button(QDialogButtonBox.Close).setEnabled(False)
         self.output_text.clear()
+        self.tableWidget.clear()
 
     def enable_close(self):
         self.buttonBox.button(QDialogButtonBox.Close).setEnabled(True)
@@ -51,8 +67,18 @@ class ProgressDialog(ProgressReporter, QDialog, FORM_CLASS):
         self.output_text.appendPlainText(text)
 
     def begintask(self, taskname, tasksize):
+        if taskname != self._currentTaskName:
+            self._currentTaskName = taskname
+            self.add_message('Currently processing rule: ' + taskname)
+            #item = QTableWidgetItem(taskname, "ProgressBar", "Count")
+            rowPosition = self.tableWidget.rowCount()  # necessary even when there are no rows in the table
+            self.tableWidget.insertRow(rowPosition)
+            self.tableWidget.setItem(rowPosition, 0, QTableWidgetItem(taskname))
+            self._currentTaskProgressBar = QProgressBar()
+            self.tableWidget.setCellWidget(rowPosition, 1, self._currentTaskProgressBar)
+            self.tableWidget.scrollToBottom()
+
         self.progress_bar.setRange(0, tasksize)
-        self.add_message('Currently processing rule: ' + taskname)
         super(ProgressDialog, self).begintask(taskname, tasksize)
 
     def completed(self, completed):
@@ -64,4 +90,8 @@ class ProgressDialog(ProgressReporter, QDialog, FORM_CLASS):
 
     def _report(self):
         self.progress_bar.setValue(self.taskcompleted)
+        percentcompleted = 100.0 * self.taskcompleted / self.tasksize if self.tasksize > 0 else 100
+        self._currentTaskProgressBar.setValue(percentcompleted)
         QApplication.processEvents()
+
+
