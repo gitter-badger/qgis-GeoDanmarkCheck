@@ -27,7 +27,8 @@ from PyQt4.QtGui import (
     QDialogButtonBox,
     QProgressBar,
     QTableWidgetItem,
-    QHeaderView
+    QHeaderView,
+    QAbstractItemView
 )
 
 FORM_CLASS, _ = uic.loadUiType(
@@ -62,6 +63,7 @@ class ProgressDialog(ProgressReporter, QDialog, FORM_CLASS):
         self._currentTaskMessages = 0
 
         # Set up tablewidget
+        self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.tableWidget.setRowCount(0);
         self.tableWidget.setColumnCount(3)
         item = QTableWidgetItem()
