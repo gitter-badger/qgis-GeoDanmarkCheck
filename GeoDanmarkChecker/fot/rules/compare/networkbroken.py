@@ -123,6 +123,7 @@ class NetworkBroken(CompareRule):
                             "{0} network possibly broken along this path".format(self.featuretype),
                             pathgeom
                         )
+        progressreporter.completed_one()
 
 
 
