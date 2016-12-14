@@ -214,6 +214,10 @@ class GeoDanmarkChecker:
             cascading_reporter = CascadingReporter([file_reporter, self.progress])
 
             self.progress.clear()
+            self.progress.add_message('Processing started [{}]'.format(datetime.datetime.now()))
+            self.progress.add_message('Edited: {}'.format(after_file))
+            self.progress.add_message('Previous version: {}'.format(before_file))
+            self.progress.add_message('Output: {}\n'.format(output_file))
             self.progress.show()
 
             rules = self.dlg.getcomparerules()
@@ -223,5 +227,6 @@ class GeoDanmarkChecker:
                 Repository(after_file)
             )
             exe.execute(rules, cascading_reporter, self.progress)
+            self.progress.add_message('\n\nProcessing done [{}]'.format(datetime.datetime.now()))
             self.progress.enable_close()
             self.add_error_layer(output_file)

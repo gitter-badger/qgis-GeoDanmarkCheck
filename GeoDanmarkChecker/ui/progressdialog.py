@@ -28,7 +28,8 @@ from PyQt4.QtGui import (
     QProgressBar,
     QTableWidgetItem,
     QHeaderView,
-    QAbstractItemView
+    QAbstractItemView,
+    QTextCursor
 )
 
 FORM_CLASS, _ = uic.loadUiType(
@@ -83,6 +84,8 @@ class ProgressDialog(ProgressReporter, QDialog, FORM_CLASS):
 
     def add_message(self, text):
         self.output_text.appendPlainText(text)
+        self.output_text.moveCursor(QTextCursor.End)
+        self.output_text.ensureCursorVisible()
 
     def begintask(self, taskname, tasksize):
         self._begintask(taskname, tasksize)
@@ -133,9 +136,9 @@ class ProgressDialog(ProgressReporter, QDialog, FORM_CLASS):
         self._currentTaskIncidentsWidget.setText(str(self._currentTaskIncidents))
         if geometry is None:
             if self._currentTaskMessages == 0:
-                self.add_message('---------------------------------------')
-                self.add_message(self._currentTaskName)
-                self.add_message('---------------------------------------')
+                self.add_message('-----------------------------------------------------------')
+                self.add_message('{} ({})'.format(self._currentTaskName, str(typeinfo)))
+                self.add_message('-----------------------------------------------------------')
             self._currentTaskMessages += 1
             self.add_message('{}:\n{}'.format(level, message))
 
