@@ -86,9 +86,9 @@ class GeoDanmarkChecker:
                 QCoreApplication.installTranslator(self.translator)
 
         # Create the dialog (after translation) and keep reference
-        rules = [update_rules,single_file_rules]
-        self.progress = ProgressDialog()
-        self.dlg = GeoDanmarkCheckerDialog(rules)
+        rules = [update_rules, single_file_rules]
+        self.progress = ProgressDialog(parent=self.iface.mainWindow())
+        self.dlg = GeoDanmarkCheckerDialog(rules, parent=self.iface.mainWindow())
 
         # Declare instance attributes
         self.actions = []

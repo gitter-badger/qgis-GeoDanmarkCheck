@@ -41,8 +41,8 @@ FORM_CLASS, _ = uic.loadUiType(
 
 
 class ProgressDialog(ProgressReporter, QDialog, FORM_CLASS):
-    def __init__(self):
-        super(ProgressReporter, self).__init__()
+    def __init__(self, parent=None):
+        super(ProgressReporter, self).__init__(parent)
         self.setupUi(self)
         self._currentTaskName = None
         self._currentTaskProgressBar = None
