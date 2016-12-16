@@ -61,11 +61,11 @@ class SegmentMatch(object):
         return same_direction
 
 class SegmentMatchFinder(object):
-    def __init__(self, matchagainstfeatures, segmentize = 0):
+    def __init__(self, matchagainstfeatures, segmentize=0):
         self.features = matchagainstfeatures
         self.indexedfeatures = FeatureIndex(matchagainstfeatures, usespatialindex=True)
         self.segmentize = float(segmentize) if segmentize else 0
-        self.approximate_angle_threshold = cos(pi/4.0)
+        self.approximate_angle_threshold = 1/cos(pi/4.0)
 
     def findmatching(self, feature, maxdistance):
         maxdistance = float(maxdistance)
@@ -89,6 +89,7 @@ class SegmentMatchFinder(object):
                     sqrddist, closestsegmentpoint, indexofclosestvertexafter = neighbor.geometry().closestSegmentWithContext(coord)
                     if sqrddist <= maxdistsqrd:
                         distances[neighbor] = (sqrddist, closestsegmentpoint, indexofclosestvertexafter)
+            print distances
             distances_per_vertex.append(distances)
 
         # for each segment find the matching feature which has the lowest summed sqrdistance from the endpoints
@@ -115,8 +116,13 @@ class SegmentMatchFinder(object):
                 # What point was closest? Make sure we dont match an endpoint of the other geom or a geom at a near 90 angle
                 prev_point = prev_distance[1]
                 this_point = this_distance[1]
-                other_segment = QgsGeometry.fromPolyline([prev_point, this_point])
-                if other_segment.length() > this_segment_length * self.approximate_angle_threshold and sumsqrddistance < smallest_distance_sqrd:
+                fg = f.geometry()
+                p1g = QgsGeometry.fromPoint(prev_point)
+                p2g = QgsGeometry.fromPoint(this_point)
+                d1 = fg.lineLocatePoint(p1g)
+                d2 = fg.lineLocatePoint(p2g)
+                other_segment_length = abs(d1 - d2)
+                if other_segment_length < this_segment_length * self.approximate_angle_threshold and sumsqrddistance < smallest_distance_sqrd:
                     # We found a closer feature
                     smallest_distance_sqrd = sumsqrddistance
                     smallest_distance_feature = f
