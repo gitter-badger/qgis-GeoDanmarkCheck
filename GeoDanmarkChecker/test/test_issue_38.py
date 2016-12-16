@@ -8,19 +8,26 @@ from ..fot.geomutils.segmentmatcher import SegmentMatchFinder
 
 
 class TestInit(unittest.TestCase):
-    def test_SegmentMatchFinder(self):
+    a = QgsFeature()
+    a.setGeometry(QgsGeometry.fromWkt("LINESTRING(0 0, 10 0)"))
+    b = QgsFeature()
+    features = [a, b]
 
-        a = QgsFeature()
-        b = QgsFeature()
-        a.setGeometry(QgsGeometry.fromWkt("LINESTRING(0 0, 10 0)"))
-        b.setGeometry(QgsGeometry.fromWkt("LINESTRING(0 0, 0 100, 10 100, 10 0)"))
-        features = [a, b]
+    def test_should_not_match_same_endpoints_and_large_diff_length(self):
+        self.b.setGeometry(QgsGeometry.fromWkt("LINESTRING(0 0, 0 100, 10 100, 10 0)"))
 
-        smf = SegmentMatchFinder(features, segmentize=20)
+        smf = SegmentMatchFinder(self.features, segmentize=20)
+        matches = len(smf.findmatching(self.a, maxdistance=0.1))
 
-        sms = smf.findmatching(a, maxdistance=0.1)
+        self.assertEqual(matches, 0)
 
-        self.assertEqual(len(sms), 0)
+    def test_should_not_match_intersecting_and_large_diff_length(self):
+        self.b.setGeometry(QgsGeometry.fromWkt("LINESTRING(0 -100, 0 100, 10 100, 10 -100)"))
+
+        smf = SegmentMatchFinder(self.features, segmentize=20)
+        matches = len(smf.findmatching(self.a, maxdistance=0.1))
+
+        self.assertEqual(matches, 0)
 
 if __name__ == '__main__':
     unittest.main()
