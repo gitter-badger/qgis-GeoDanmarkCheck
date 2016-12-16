@@ -81,3 +81,30 @@ def densify(geometry, maxsegmentlength):
     # Add last coord
     output_coords.append(input_coords[-1])
     return QgsGeometry.fromPolyline(output_coords)
+
+
+def line_locate_point(geometry, point):
+    g = togeometry(geometry)
+    p = tocoordinates(point)
+    coords = tocoordinates(g)
+
+    assert QGis.flatType((g.wkbType())) == QGis.WKBLineString, 'Expected a LineString'
+    assert len(p) == 1, 'Expected a point'
+
+    sqrddist, closestsegmentpoint, indexofclosestvertexafter = g.geometry().closestSegmentWithContext(p)
+
+    sum_length = 0
+
+    # Length of segments before the segment, where the point is located
+    for ix in range(1, indexofclosestvertexafter):
+        p0 = coords[ix - 1]
+        p1 = coords[ix]
+        segment = QgsGeometry.fromPolyline([p0, p1])
+        sum_length += segment.length()
+
+    # Part of segment where the points is located
+    p0 = coords[indexofclosestvertexafter - 1]
+    segment = QgsGeometry.fromPolyline([p0, closestsegmentpoint])
+    sum_length += segment.length()
+
+    return sum_length
