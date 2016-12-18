@@ -89,7 +89,6 @@ class SegmentMatchFinder(object):
                     sqrddist, closestsegmentpoint, indexofclosestvertexafter = neighbor.geometry().closestSegmentWithContext(coord)
                     if sqrddist <= maxdistsqrd:
                         distances[neighbor] = (sqrddist, closestsegmentpoint, indexofclosestvertexafter)
-            print distances
             distances_per_vertex.append(distances)
 
         # for each segment find the matching feature which has the lowest summed sqrdistance from the endpoints
