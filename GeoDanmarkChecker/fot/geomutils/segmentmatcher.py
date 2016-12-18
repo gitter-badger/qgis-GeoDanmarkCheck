@@ -22,7 +22,7 @@ from qgis.core import QgsGeometry
 from . import FeatureIndex
 from featurematcher import FeatureMatch
 from . import togeometry, tocoordinates
-from .algorithms import densify
+from .algorithms import densify, line_locate_point
 from math import sqrt, cos, pi
 
 class SegmentMatch(object):
@@ -115,11 +115,8 @@ class SegmentMatchFinder(object):
                 # What point was closest? Make sure we dont match an endpoint of the other geom or a geom at a near 90 angle
                 prev_point = prev_distance[1]
                 this_point = this_distance[1]
-                fg = f.geometry()
-                p1g = QgsGeometry.fromPoint(prev_point)
-                p2g = QgsGeometry.fromPoint(this_point)
-                d1 = fg.lineLocatePoint(p1g)
-                d2 = fg.lineLocatePoint(p2g)
+                d1 = line_locate_point(f.geometry(), prev_point)
+                d2 = line_locate_point(f.geometry(), this_point)
                 other_segment_length = abs(d1 - d2)
                 if other_segment_length < this_segment_length * self.approximate_angle_threshold and sumsqrddistance < smallest_distance_sqrd:
                     # We found a closer feature

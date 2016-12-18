@@ -84,14 +84,12 @@ def densify(geometry, maxsegmentlength):
 
 
 def line_locate_point(geometry, point):
-    g = togeometry(geometry)
-    p = tocoordinates(point)
-    coords = tocoordinates(g)
+    coords = tocoordinates(geometry)
 
-    assert QGis.flatType((g.wkbType())) == QGis.WKBLineString, 'Expected a LineString'
-    assert len(p) == 1, 'Expected a point'
+    assert QGis.flatType((geometry.wkbType())) == QGis.WKBLineString, 'Expected a LineString'
+    assert len(point) == 2, 'Expected a point'
 
-    sqrddist, closestsegmentpoint, indexofclosestvertexafter = g.geometry().closestSegmentWithContext(p)
+    sqrddist, closestsegmentpoint, indexofclosestvertexafter = geometry.closestSegmentWithContext(point)
 
     sum_length = 0
 
