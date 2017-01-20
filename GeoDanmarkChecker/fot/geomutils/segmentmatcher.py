@@ -60,12 +60,15 @@ class SegmentMatch(object):
                      same_direction = False
         return same_direction
 
+
 class SegmentMatchFinder(object):
     def __init__(self, matchagainstfeatures, segmentize=0):
         self.features = matchagainstfeatures
         self.indexedfeatures = FeatureIndex(matchagainstfeatures, usespatialindex=True)
         self.segmentize = float(segmentize) if segmentize else 0
-        self.approximate_angle_threshold = 1/cos(pi/4.0)
+
+        self.approximate_angle_threshold = cos(pi/4.0) # Not a match if: other_segment_length < this_segment_length * self.approximate_angle_threshold
+        self.length_threshold_factor = 1.3 # Not a match if: other_segment_length > this_segment_length * self.length_threshold_factor
 
     def findmatching(self, feature, maxdistance):
         maxdistance = float(maxdistance)
@@ -118,7 +121,8 @@ class SegmentMatchFinder(object):
                 d1 = line_locate_point(f.geometry(), prev_point)
                 d2 = line_locate_point(f.geometry(), this_point)
                 other_segment_length = abs(d1 - d2)
-                if other_segment_length < this_segment_length * self.approximate_angle_threshold and sumsqrddistance < smallest_distance_sqrd:
+                if (sumsqrddistance < smallest_distance_sqrd and
+                        this_segment_length * self.approximate_angle_threshold < other_segment_length < this_segment_length * self.length_threshold_factor):
                     # We found a closer feature
                     smallest_distance_sqrd = sumsqrddistance
                     smallest_distance_feature = f
