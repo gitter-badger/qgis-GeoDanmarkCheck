@@ -1,4 +1,11 @@
 language: python
 python:
   - "2.7"
+cache: apt
+addons:
+  apt:
+    packages:
+    - qgis
+    - python-qgis
 script: nosetests -w GeoDanmarkChecker/test/regression/
+
