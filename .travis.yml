@@ -6,7 +6,7 @@ addons:
   apt:
     sources:
     - sourceline: 'ppa:ubuntugis/ubuntugis-unstable'
-    - sourceline: 'deb http://qgis.org/debian precise main'
+    - sourceline: 'deb http://qgis.org/ubuntugis-ltr precise main'
       key_url: 'http://qgis.org/downloads/qgis-2016.gpg.key'
     packages:
     - qgis
