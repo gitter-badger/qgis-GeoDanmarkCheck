@@ -1,4 +1,7 @@
 # qgis-GeoDanmarkCheck
+
+[![Build Status](https://travis-ci.org/Septima/qgis-GeoDanmarkCheck.svg?branch=master)](https://travis-ci.org/Septima/qgis-GeoDanmarkCheck)
+
 Plugin for validating GeoDanmark data
 
 ## Installation
