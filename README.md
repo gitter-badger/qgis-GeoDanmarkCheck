@@ -1,5 +1,7 @@
 # qgis-GeoDanmarkCheck
 
+[![Join the chat at https://gitter.im/Septima/qgis-GeoDanmarkCheck](https://badges.gitter.im/Septima/qgis-GeoDanmarkCheck.svg)](https://gitter.im/Septima/qgis-GeoDanmarkCheck?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [![Build Status](https://travis-ci.org/Septima/qgis-GeoDanmarkCheck.svg?branch=master)](https://travis-ci.org/Septima/qgis-GeoDanmarkCheck)
 
 Plugin for validating GeoDanmark data
